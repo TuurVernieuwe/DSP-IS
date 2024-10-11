@@ -6,10 +6,10 @@ f0 = 1500; % Frequency of sinewave [Hz]
 t_max = 2; % Length of the signal [s]
 
 % Generate sinewave
-sinewave = sin(2*pi*linspace(0, f0*t_max, fs*t_max)');
+sinewave = sin(linspace(0,f0*t_max,fs*t);
 
 % Call to initparams()
-[simin, nbsecs, fs] = initparams(sinewave, fs);
+[] = initparams();
 
 %% Play and record signal
 % Call to recplay.mdl to play simin and record simout
@@ -20,4 +20,3 @@ out=simout.signals.values;
 
 %% Playback
 % Play the sound using sound() or soundsc()
-soundsc(out, fs)

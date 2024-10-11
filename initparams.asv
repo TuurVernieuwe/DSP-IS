@@ -33,7 +33,7 @@ end
 
 %% Append silence to toplay
 % Insert 2s of silence at the beginning of toplay and 1s of silcence at the end of toplay
-toplay = [zeros(2*fs, 1); toplay; zeros(fs, 1)];
+toplay = ;
 
 % Scale toplay to be between [-1,1] -
 % -> You can leave this commented until exercise 1.2.7
@@ -41,10 +41,10 @@ toplay = [zeros(2*fs, 1); toplay; zeros(fs, 1)];
 
 %% Create simin
 % Two column matrix: one column is toplay, one column is silence
-simin = [toplay; zeros(length(toplay), 1)];
+simin = [];
 
 %% Calculate number of seconds in simin
-nbsecs = ceil(length(simin)/fs);
+nbsecs = ;
 
 %% Asserting correctness of the dimensions of simin
 % nbsecs should be a scalar
