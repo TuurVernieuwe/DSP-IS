@@ -2,11 +2,12 @@
 
 %% Generate a sinewave
 fs = 16000; % Sampling rate [Hz]
-f0 = 1500; % Frequency of sinewave [Hz]
-t_max = 2; % Length of the signal [s]
+f0 = 500; % Frequency of sinewave [Hz]
+t_max = 2;
+t = 0:1/fs:t_max; % Length of the signal [s]
 
 % Generate sinewave
-sinewave = sin(2*pi*linspace(0, f0*t_max, fs*t_max)');
+sinewave = sin(2*pi*f0*t)';
 
 % Call to initparams()
 [simin, nbsecs, fs] = initparams(sinewave, fs);
