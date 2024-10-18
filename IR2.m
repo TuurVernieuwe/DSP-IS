@@ -4,17 +4,17 @@
 clear; clc; close all
 
 %% Initialize script parameters.
-fs = ; % Sampling frequency [Hz]
-dftsize = ; % Discrete Fourier Transform (DFT) size [Samples] 
+fs = 16000; % Sampling frequency [Hz]
+dftsize = 256; % Discrete Fourier Transform (DFT) size [Samples] 
 % Overlap length between subsequent frames in the
 % short-time-Fourier-transform (STFT) [samples]
-Noverlap = ; 
-channelLength = ; % Length of impulse response [samples]
-delay = ; % Positive delay safety margin when aligning input and output [samples]
+Noverlap = 128; 
+channelLength = 8000; % Length of impulse response [samples]
+delay = 200; % Positive delay safety margin when aligning input and output [samples]
 
 %% Create the signal to be played.
-duration = ; % Duration of the signal in [s]
-sig = wgn();  
+duration = 2; % Duration of the signal in [s]
+sig = wgn(duration*fs, );  
 
 %% Filter signal -> only to be used for exercise 2.3 (To this end, also copy the content
 %% of the current file to a new IR_bandstop.m file)
