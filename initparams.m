@@ -37,7 +37,7 @@ toplay = [zeros(2*fs, 1); toplay; zeros(fs, 1)];
 
 % Scale toplay to be between [-1,1] -
 % -> You can leave this commented until exercise 1.2.7
-% toplay = ;
+toplay = rescale(toplay, -1, 1);
 
 %% Create simin
 % Two column matrix: one column is toplay, one column is silence
