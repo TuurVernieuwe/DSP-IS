@@ -15,7 +15,7 @@ f0 = 400;
 Noverlap = 128; 
 
 %% Construct signals
-sig = sin(2*pi*f0*t)'; 
+sig = wgn(2*fs,1,0); 
 
 %% Play and record.
 % Call to initparams()
@@ -59,8 +59,8 @@ out = out(2*fs:end-fs, 1);
 %% Compute and plot the power spectral density (PSD)...
 % ...Using Welch's method
 % Input signal
-subplot(2,1,1);
-[pxx_sig, f_sig] = pwelch(sig, N, Noverlap, N, fs);  % Compute PSD using Welch's method
+figure; subplot(2,1,1);
+[pxx_sig, f_sig] = pwelch(in, N, Noverlap, N, fs);  % Compute PSD using Welch's method
 plot(f_sig, 10*log10(pxx_sig));  % Convert to dB scale
 title('PSD of Transmitted Signal (Welch Method)');
 xlabel('Frequency (Hz)');
@@ -77,59 +77,59 @@ grid on;
 
 % ...Using Bartlett's method
 % Input signal
-[S,F,T,P] = spectrogram(sig,rectwin(),Noverlap,N,fs);
-PSD_Bartlett_input = P;
+[S,F,T,P] = spectrogram(in,N,Noverlap,N,fs);
+PSD_Bartlett_input = mean(P, 2);
 % Output signal
-[S,F,T,P] = spectrogram(out,rectwin(),Noverlap,N,fs);
-PSD_Bartlett_output = P;
+[S,F_mic,T,P] = spectrogram(out,N,Noverlap,N,fs);
+PSD_Bartlett_output = mean(P, 2);
 % Plot results
-figure;
 % Input signal
 figure; subplot(2,1,1)
 plot(F,pow2db(PSD_Bartlett_input));
 xlabel('Frequency (kHz)');
 ylabel('Power/frequency (dB/Hz)')
 title('Input signal.')
+grid on;
 % Output signal
 subplot(2,1,2)
-plot(F,pow2db(PSD_Bartlett_output));
+plot(F_mic,pow2db(PSD_Bartlett_output));
 xlabel('Frequency (kHz)');
 ylabel('Power/frequency (dB/Hz)')
 title('Output signal.')
 sgtitle('Power Spectral Density estimate using Bartlett''s method')
+grid on;
 
-% % ...using the magnitude squared of the frequency spectrum
-% % Input signal
-% Power_fft_squared_input = abs(fft(sig))^2; % Compute magnitude absolute value squared of the fft of the input
-% % Rescaling and computations to calcualte the one sided PSD to be
-% % consistent with 'periodogram' (You can ignore the following lines)
-% Power_fft_squared_input = Power_fft_squared_input/(length(in)*fs);
-% PSD_fft_squared_input = Power_fft_squared_input(1:floor(length(in)/2)+1);
-% PSD_fft_squared_input(2:ceil(length(in)/2)) = ...
-%     PSD_fft_squared_input(2:ceil(length(in)/2)) + ...
-%     flipud(Power_fft_squared_input(floor(length(in)/2)+2:length(in)));
-% % Ouput signal
-% Power_fft_squared_output = abs(fft(out))^2; % Compute magnitude absolute value squared of the fft of the output
-% % Rescaling and computations to calculate the one sided PSD to be
-% % consistent with 'periodogram' (You can ignore the following lines)
-% Power_fft_squared_output = Power_fft_squared_output/(length(out)*fs);
-% PSD_fft_squared_output = Power_fft_squared_output(1:floor(length(out)/2)+1);
-% PSD_fft_squared_output(2:ceil(length(out)/2)) = ...
-%     PSD_fft_squared_output(2:ceil(length(out)/2)) + ...
-%     flipud(Power_fft_squared_output(floor(length(out)/2)+2:length(out)));
-% 
-% % Plot results
-% figure;
-% % Input signal
-% figure; subplot(2,1,1)
-% plot((0:fs/length(PSD_fft_squared_input):fs/2),pow2db(PSD_fft_squared_input));
-% xlabel('Frequency (kHz)');
-% ylabel('Power/frequency (dB/Hz)')
-% title('Input signal.')
-% % Output signal
-% subplot(2,1,2)
-% plot((0:fs/length(PSD_fft_squared_output):fs/2),pow2db(PSD_fft_squared_output));
-% xlabel('Frequency (kHz)');
-% ylabel('Power/frequency (dB/Hz)')
-% title('Output signal.')
-% sgtitle('Power Spectral Density estimate using the magnitude squared of the frequency spectrum')
+% ...using the magnitude squared of the frequency spectrum
+% Input signal
+Power_fft_squared_input = abs(fft(in)).^2; % Compute magnitude absolute value squared of the fft of the input
+% Rescaling and computations to calcualte the one sided PSD to be
+% consistent with 'periodogram' (You can ignore the following lines)
+Power_fft_squared_input = Power_fft_squared_input/(length(in)*fs);
+PSD_fft_squared_input = Power_fft_squared_input(1:floor(length(in)/2)+1);
+PSD_fft_squared_input(2:ceil(length(in)/2)) = ...
+    PSD_fft_squared_input(2:ceil(length(in)/2)) + ...
+    flipud(Power_fft_squared_input(floor(length(in)/2)+2:length(in)));
+% Ouput signal
+Power_fft_squared_output = abs(fft(out)).^2; % Compute magnitude absolute value squared of the fft of the output
+% Rescaling and computations to calculate the one sided PSD to be
+% consistent with 'periodogram' (You can ignore the following lines)
+Power_fft_squared_output = Power_fft_squared_output/(length(out)*fs);
+PSD_fft_squared_output = Power_fft_squared_output(1:floor(length(out)/2)+1);
+PSD_fft_squared_output(2:ceil(length(out)/2)) = ...
+    PSD_fft_squared_output(2:ceil(length(out)/2)) + ...
+    flipud(Power_fft_squared_output(floor(length(out)/2)+2:length(out)));
+
+% Plot results
+% Input signal
+figure; subplot(2,1,1)
+plot((0:fs/length(Power_fft_squared_input):fs/2),pow2db(PSD_fft_squared_input));
+xlabel('Frequency (kHz)');
+ylabel('Power/frequency (dB/Hz)')
+title('Input signal.')
+% Output signal
+subplot(2,1,2)
+plot((0:fs/length(Power_fft_squared_output):fs/2),pow2db(PSD_fft_squared_output));
+xlabel('Frequency (kHz)');
+ylabel('Power/frequency (dB/Hz)')
+title('Output signal.')
+sgtitle('Power Spectral Density estimate using the magnitude squared of the frequency spectrum')
