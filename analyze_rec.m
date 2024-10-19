@@ -6,16 +6,16 @@ clear; close all;
 
 %% Initialize script parameters
 fs = 16000; % Sampling frequency [Hz]
-N = 256; % Discrete Fourier Transform (DFT) size [Samples] 
+N = 512; % Discrete Fourier Transform (DFT) size [Samples] 
 t_max = 2; % Length of the signal [s]
 t = 0:1/fs:t_max;
 f0 = 400;
 % Overlap length between subsequent frames in the
 % short-time-Fourier-transform (STFT) used to plot the spectrogra [samples]
-Noverlap = 128; 
+Noverlap = 256; 
 
 %% Construct signals
-sig = wgn(2*fs,1,0); 
+sig = sin(2*pi*f0*t)';
 
 %% Play and record.
 % Call to initparams()
@@ -45,7 +45,6 @@ axis xy;                                                % Correct axis orientati
 xlabel('Time (s)');
 ylabel('Frequency (Hz)');
 ylim([0 2000]);
-xlim([2, 4])
 title('Spectrogram of Signal out "out"');
 colorbar;
 
