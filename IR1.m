@@ -5,10 +5,10 @@ clear; clc; close all
 
 %% Initialize script parameters.
 fs = 16000; % Sampling frequency [Hz]
-dftsize = 256; % Discrete Fourier Transform (DFT) size [Samples] 
+dftsize = 528; % Discrete Fourier Transform (DFT) size [Samples] 
 % Overlap length between subsequent frames in the
 % short-time-Fourier-transform (STFT) [samples]
-Noverlap = 128; 
+Noverlap = 256; 
 
 %% Create the signal to be played
 sig = [1; zeros(2*fs-1, 1)];                       
@@ -34,7 +34,7 @@ xlabel('Time [samples]')
 ylabel('Impulse response [arb.]')
 % Magnitude response
 subplot(2,1,2)
-plot(pow2db(abs(fft(h)).^2));
+plot(pow2db(abs(fft(h, dftsize))));
 xlabel('Frequency [Hz]')
 ylabel('Magnitude response [dB]')
 
