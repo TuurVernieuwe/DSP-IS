@@ -23,8 +23,8 @@ out=simout.signals.values(:,1);
 
 %% Calculate the IR by trimming the output
 h = out(2*fs:end-fs, 1);
-filter = floor(80*abs(h));
-h = filter.*h;
+% filter = floor(80*abs(h));
+% h = filter.*h;
 
 %% Plot IR.
 % Time domain signal
