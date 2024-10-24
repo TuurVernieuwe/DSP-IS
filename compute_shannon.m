@@ -3,16 +3,16 @@ clear; clc; close all
 
 %% Step 1: Initialization
 % Hardcoded parameters
-fs = 44100;                 % Sampling frequency [Hz]
+fs = 16000;                 % Sampling frequency [Hz]
 nyquist_bandwidth = fs/2;   % nyquist bandwidth
 N = 1024;                   % DFT size, number of frequency bins
 K = N / 2;                  % Half of the DFT bins
 
 % Duration of the recordings
-duration = 5;  % Duration for recording signal and noise in seconds
+duration = 2;  % Duration for recording signal and noise in seconds
 
 %% Step2: record noise
-sig = zeros(duration+fs, 1);
+sig = zeros(duration*fs, 1);
 [simin, nbsecs, fs] = initparams(sig, fs);
 
 % Call to recplay.mdl to play simin and record simout
@@ -49,3 +49,4 @@ for k = 1:K
    Cchannel = Cchannel + log2(1 + P_signal(k) / P_noise(k));  % Sum the contributions from each frequency bin
 end
 Cchannel = (fs / N) * Cchannel;  % Apply the scaling factor fs / N
+disp(Cchannel)

@@ -1,10 +1,8 @@
-% Plays and records signals, which are subsequently analyzed by looking at
-% the spectrograms, and the power spectral densities.
-
 %% Cleanup
 clear; close all;
 
-%% Initialize script parameters
+%%zeek1
+% Initialize script parameters
 fs = 16000; % Sampling frequency [Hz]
 N = 512; % Discrete Fourier Transform (DFT) size [Samples] 
 t_max = 2; % Length of the signal [s]
@@ -14,10 +12,10 @@ f0 = 1500;
 % short-time-Fourier-transform (STFT) used to plot the spectrogra [samples]
 Noverlap = 256; 
 
-%% Construct signals
-sig = wgn(2*fs, 1, 0);
+% Construct signals
+sig = wgn(2*fs, 1, 1);
 
-%% Play and record.
+% Play and record.
 % Call to initparams()
 [simin, nbsecs, fs] = initparams(sig, fs);
 % Call to recplay.mdl to play simin and record simout
@@ -26,7 +24,7 @@ sim('recplay');
 out=simout.signals.values(:,1);
 
 
-%% Compute and plot the spectrogram
+% Compute and plot the spectrogram
 % Input signal
 figure; subplot(2,1,1);        % First subplot for the signal in 'sig'
 [S, F, T, P] = spectrogram(sig, N, Noverlap, N, fs);   % Compute spectrogram
@@ -49,14 +47,14 @@ ylim([0 2000]);
 title('Spectrogram of Signal out "out"');
 colorbar;
 
-%% Select input and output signals to compute PSD
+% Select input and output signals to compute PSD
 % Ideally the output signal should be trimmed such that only periods where
 % the signal is active are considered as the PSD assumes stationarity. 
 % Else, the PSD will be biased due to the inclusion of the silence.
 in = simin(2*fs:end-fs, 1);
-out = out(2*fs:end-fs, 1);
+out_selected = out(2*fs:end-fs, 1);
 
-%% Compute and plot the power spectral density (PSD)...
+% Compute and plot the power spectral density (PSD)...
 % ...Using Welch's method
 % Input signal
 figure; subplot(2,1,1);
@@ -65,14 +63,16 @@ plot(f_sig, 10*log10(pxx_sig));  % Convert to dB scale
 title('PSD of Transmitted Signal (Welch Method)');
 xlabel('Frequency (Hz)');
 ylabel('Power/Frequency (dB/Hz)');
+ylim([-54, -48]);
 grid on;
 % Output signal
 subplot(2,1,2);
-[pxx_mic, f_mic] = pwelch(out, N, Noverlap, N, fs);  % Compute PSD using Welch's method
+[pxx_mic, f_mic] = pwelch(out_selected, N, Noverlap, N, fs);  % Compute PSD using Welch's method
 plot(f_mic, 10*log10(pxx_mic));  % Convert to dB scale
 title('PSD of Recorded Signal (Welch Method)');
 xlabel('Frequency (Hz)');
 ylabel('Power/Frequency (dB/Hz)');
+ylim([-100, -50]);
 grid on;
 
 % ...Using Bartlett's method
@@ -88,48 +88,80 @@ figure; subplot(2,1,1)
 plot(F,pow2db(PSD_Bartlett_input));
 xlabel('Frequency (kHz)');
 ylabel('Power/frequency (dB/Hz)')
-title('Input signal.')
+title('PSD of Transmitted Signal (Barlett Method)');
+ylim([-54, -48]);
 grid on;
 % Output signal
 subplot(2,1,2)
 plot(F_mic,pow2db(PSD_Bartlett_output));
 xlabel('Frequency (kHz)');
 ylabel('Power/frequency (dB/Hz)')
-title('Output signal.')
-sgtitle('Power Spectral Density estimate using Bartlett''s method')
+title('PSD of Recorded Signal (Barlett Method)');
+ylim([-100, -50]);
 grid on;
 
-% ...using the magnitude squared of the frequency spectrum
-% Input signal
-Power_fft_squared_input = abs(fft(in)).^2; % Compute magnitude absolute value squared of the fft of the input
-% Rescaling and computations to calcualte the one sided PSD to be
-% consistent with 'periodogram' (You can ignore the following lines)
-Power_fft_squared_input = Power_fft_squared_input/(length(in)*fs);
-PSD_fft_squared_input = Power_fft_squared_input(1:floor(length(in)/2)+1);
-PSD_fft_squared_input(2:ceil(length(in)/2)) = ...
-    PSD_fft_squared_input(2:ceil(length(in)/2)) + ...
-    flipud(Power_fft_squared_input(floor(length(in)/2)+2:length(in)));
-% Ouput signal
-Power_fft_squared_output = abs(fft(out)).^2; % Compute magnitude absolute value squared of the fft of the output
-% Rescaling and computations to calculate the one sided PSD to be
-% consistent with 'periodogram' (You can ignore the following lines)
-Power_fft_squared_output = Power_fft_squared_output/(length(out)*fs);
-PSD_fft_squared_output = Power_fft_squared_output(1:floor(length(out)/2)+1);
-PSD_fft_squared_output(2:ceil(length(out)/2)) = ...
-    PSD_fft_squared_output(2:ceil(length(out)/2)) + ...
-    flipud(Power_fft_squared_output(floor(length(out)/2)+2:length(out)));
+%% week2: IR2
+% Channel estimation according to the IR2 method
 
-% Plot results
-% Input signal
+% Initialize script parameters.
+dftsize = 256; % Discrete Fourier Transform (DFT) size [Samples] 
+% Overlap length between subsequent frames in the
+% short-time-Fourier-transform (STFT) [samples]
+channelLength = 550; % Length of impulse response [samples]
+delay = 6720; % Positive delay safety margin when aligning input and output [samples]
+
+% Calculate the impulse response.
+uMatrix = toeplitz(sig , [sig(1); zeros(channelLength-1, 1)]); % Toeplitz matrix
+yOnset = 2*fs+delay; % Determine start of recorded signal [samples]
+y = out(yOnset:yOnset+size(uMatrix, 1)-1); % Extract the relevant output signal
+
+h = lsqr(uMatrix, y); % Estimate impulse response
+
+save('channel.mat','h'); % Save impulser response
+
+% Plot IR.
+% Time domain signal
 figure; subplot(2,1,1)
-plot((0:fs/length(Power_fft_squared_input):fs/2),pow2db(PSD_fft_squared_input));
-xlabel('Frequency (kHz)');
-ylabel('Power/frequency (dB/Hz)')
-title('Input signal.')
-% Output signal
+plot(h);
+xlabel('Time [samples]')
+ylabel('Impulse response [arb.]')
+title("Time response")
+% Magnitude response
 subplot(2,1,2)
-plot((0:fs/length(Power_fft_squared_output):fs/2),pow2db(PSD_fft_squared_output));
-xlabel('Frequency (kHz)');
-ylabel('Power/frequency (dB/Hz)')
-title('Output signal.')
-sgtitle('Power Spectral Density estimate using the magnitude squared of the frequency spectrum')
+plot(pow2db(abs(fft(h, dftsize))));
+xlabel('Frequency [Hz]')
+ylabel('Magnitude response [dB]')
+title("Frequency response")
+sgtitle("IR2")
+
+%% week2: IR1
+%% Create the signal to be played
+sig = [1; zeros(2*fs-1, 1)];                       
+
+%% Play and record.
+% Call to initparams()
+[simin, nbsecs, fs] = initparams(sig, fs);
+% Call to recplay.mdl to play simin and record simout
+sim('recplay');
+% Retrieve recorded output
+out=simout.signals.values(:,1);
+
+%% Calculate the IR by trimming the output
+h = out(2*fs:end-fs, 1);
+% filter = floor(60*abs(h));
+% h = filter.*h;
+
+%% Plot IR.
+% Time domain signal
+figure; subplot(2,1,1)
+plot(h);
+xlabel('Time [samples]')
+ylabel('Impulse response [arb.]')
+title("Time response")
+% Magnitude response
+subplot(2,1,2)
+plot(pow2db(abs(fft(h, dftsize))));
+xlabel('Frequency [Hz]')
+ylabel('Magnitude response [dB]')
+title("Frequency response")
+sgtitle("IR1")

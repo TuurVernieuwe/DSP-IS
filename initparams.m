@@ -41,7 +41,7 @@ toplay = rescale(toplay, -1, 1);
 
 %% Create simin
 % Two column matrix: one column is toplay, one column is silence
-simin = [toplay; zeros(length(toplay), 1)];
+simin = [toplay, zeros(length(toplay), 1)];
 
 %% Calculate number of seconds in simin
 nbsecs = ceil(length(simin)/fs);
