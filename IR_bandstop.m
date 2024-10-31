@@ -20,7 +20,8 @@ sig = wgn(duration*fs, 1, 1);
 %% Filter signal -> only to be used for exercise 2.3 (To this end, also copy the content
 %% of the current file to a new IR_bandstop.m file)
 filt = fir1(100, [700 3000] / (fs / 2), 'stop');
-sig = fftfilt(filt, sig);
+% sig = fftfilt(filt, sig);
+sig = filter(filt, 1, sig);
 
 %% Play and record.
 % Call to initparams()
@@ -37,7 +38,7 @@ y = out(yOnset:yOnset+size(uMatrix, 1)-1); % Extract the relevant output signal
 
 h = lsqr(uMatrix, y); % Estimate impulse response
 
-save('channel.mat','h'); % Save impulser response
+save('channel.mat','h'); % Save impulse response
 
 %% Plot IR.
 % Time domain signal

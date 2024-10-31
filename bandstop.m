@@ -7,7 +7,7 @@ f_stop2 = 3000;         % Upper stop band frequency (Hz)
 
 % Generate white noise
 t = 0:1/Fs:duration;    % Time vector
-white_noise = wgn(duration*fs, 1, 1); % Generate white noise
+white_noise = wgn(duration*Fs, 1, 1); % Generate white noise
 
 % Design the band-stop filter
 Wn = [f_stop1 f_stop2] / (Fs / 2); % Normalize frequency
