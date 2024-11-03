@@ -5,9 +5,9 @@ clear; clc; close all;
 SNRs = 1:10; % List of SNR values to consider [dB]
 M = 16; % QAM constellation size
 N_QAM = 1:6; % Number of symbols per OFDM frame, i.e., the DFT size
-N_OFDM = 8;
+N_OFDM = 18;
 L = 100000; % Binary sequence length [samples]
-Lcp = 2; % Cyclic prefix length [Samples] (you can ignore this until exercise 3.2.4)
+Lcp = 10; % Cyclic prefix length [Samples] (you can ignore this until exercise 3.2.4)
 
 %% OFDM experiment
 % Calculate BER for each constellation-SNR combination.

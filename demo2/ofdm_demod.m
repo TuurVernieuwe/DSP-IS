@@ -58,11 +58,11 @@ function [ data_seq, CHANNELS ] = ofdm_demod(OFDM_seq, N, Lcp, varargin )
 %% Extract input arguments
 if nargin == 4 % Session 3
     streamLength = varargin{1};
-elseif nargin == 7 % Session 4
+elseif nargin == 5 % Session 4
     streamLength = varargin{1};
     channel = varargin{2};
-    ON_OFF_mask = varargin{3};
-    equalization = varargin{4};
+    % ON_OFF_mask = varargin{3};
+    % equalization = varargin{4};
 elseif nargin == 6 % Session 5
     streamLength = varargin{1};
     ON_OFF_mask = varargin{2};
@@ -98,9 +98,14 @@ QAM_matrix = fft(OFDM_matrix);
 QAM_matrix = QAM_matrix(2:size(QAM_matrix, 1)/2, :);
 
 % Apply channel equalisation (you can ignore this until exercise 4.2.3)
-CHANNELS = 0;
-% QAM_matrix = ;
+if exist('channel', 'var')
+    CHANNELS = fft(channel, N/2-1); % Compute CFR with N points
 
+    % Equalize: scale each subcarrier by the inverse of the channel response
+    QAM_matrix = QAM_matrix ./ CHANNELS; % Equalization
+else
+    CHANNELS = []; % No equalization applied
+end
 % Apply on-off mask (you can ignore this until exercise 4.3)
 % QAM_matrix = ;
 

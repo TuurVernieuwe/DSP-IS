@@ -50,7 +50,10 @@ end
 
 %% Construct the OFDM sequence
 % Put the QAM symbols into matrix of N/2-1 rows
-QAM_seq = [QAM_seq; zeros(N/2-1 - mod(length(QAM_seq), N/2-1), 1)];
+padlength = N/2-1 - mod(length(QAM_seq), N/2-1);
+if padlength ~= N/2-1
+    QAM_seq = [QAM_seq; zeros(N/2-1 - mod(length(QAM_seq), N/2-1), 1)];
+end
 QAM_matrix = reshape(QAM_seq, N/2-1, []); 
 
 % Construct the OFDM frames according to Figure 2 in session 3
