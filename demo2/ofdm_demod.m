@@ -95,17 +95,20 @@ OFDM_matrix = OFDM_matrix(Lcp+1:end, :);
 QAM_matrix = fft(OFDM_matrix);
 
 % Remove the redundant parts of QAM_matrix
-QAM_matrix = QAM_matrix(2:size(QAM_matrix, 1)/2, :);
+QAM_matrix = QAM_matrix(2:N/2, :);
 
 % Apply channel equalisation (you can ignore this until exercise 4.2.3)
 if exist('channel', 'var')
-    CHANNELS = fft(channel, N/2-1); % Compute CFR with N points
+    CHANNELS = fft(channel, N); % Compute CFR with N points
 
     % Equalize: scale each subcarrier by the inverse of the channel response
-    QAM_matrix = QAM_matrix ./ CHANNELS; % Equalization
+    QAM_matrix = QAM_matrix ./ CHANNELS(1:N/2-1); % Equalization
 else
     CHANNELS = []; % No equalization applied
 end
+% Apply on-off mask (you can ignore this until exercise 4.3)
+% QAM_matrix = ;
+
 % Apply on-off mask (you can ignore this until exercise 4.3)
 % QAM_matrix = ;
 

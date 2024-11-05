@@ -3,6 +3,7 @@ clear; close all; clc;
 
 %% Parameters
 M = 16; % QAM constellation size
+Nq = log2(M);
 h0 = 1; h1 = 0; h2 = 0; % Channel impulse response coefficients
 channel = [h0, h1, h2]; % Impulse response of channel
 N = 50; % Total number of symbols in a single OFDM frame, i.e., the DFT size
@@ -11,7 +12,7 @@ SNR = 30;
 
 %% Channel effect experiment
 % bit stream 
-bitSeq = randi([0, 1], log2(M)*((N/2)-1), 1); % Generate the bit sequence corresponding to 1 QAM symbol
+bitSeq = randi([0, 1], Nq*((N/2)-1), 1); % Generate the bit sequence corresponding to 1 QAM symbol
 % bitStream = repmat(bitSeq, N/2-1, 1); % Repeat this bit sequence to fill 1 OFDM frame
 bitStream = bitSeq;
 
@@ -29,7 +30,7 @@ rxOfdmStream = fftfilt(channel, ofdmStream);
 rxOfdmStream = awgn(rxOfdmStream, SNR);
 
 % OFDM demodulation
-rxQamStream = ofdm_demod(rxOfdmStream, N, Lcp, length(qamStream), channel.');
+rxQamStream = ofdm_demod(rxOfdmStream, N, Lcp, length(qamStream));
 
 % QAM constellation visualization
 scatterplot(rxQamStream);
