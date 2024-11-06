@@ -100,9 +100,8 @@ QAM_matrix = QAM_matrix(2:N/2, :);
 % Apply channel equalisation (you can ignore this until exercise 4.2.3)
 if exist('channel', 'var')
     CHANNELS = fft(channel, N); % Compute CFR with N points
-
     % Equalize: scale each subcarrier by the inverse of the channel response
-    QAM_matrix = QAM_matrix ./ CHANNELS(1:N/2-1); % Equalization
+    QAM_matrix = QAM_matrix ./ CHANNELS(2:N/2); % Equalization
 else
     CHANNELS = []; % No equalization applied
 end

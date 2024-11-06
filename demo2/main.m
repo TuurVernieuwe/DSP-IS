@@ -62,4 +62,4 @@ imageRx = bitstreamtoimage(rxBitStream, imageSize, bitsPerPixel);
 % Plot images
 figure
 subplot(2,1,1); colormap(colorMap); image(imageData); axis image; title('Original image'); drawnow;
-subplot(2,1,2); colormap(colorMap); image(imageRx); axis image; title(['Received image']); drawnow;
+subplot(2,1,2); colormap(colorMap); image(imageRx); axis image; title('Received image'); drawnow;
