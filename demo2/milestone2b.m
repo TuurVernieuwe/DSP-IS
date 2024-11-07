@@ -4,8 +4,8 @@ clear; close all; clc;
 
 %% Parameters
 SNR= 15;
-M = 8; % QAM constellation size
-load("channel.mat");
+M = 16; % QAM constellation size
+load("channel_session4.mat");
 L = 300; % user defined channel order
 channel = h; % Impulse response of channel
 N = 2048; % Total number of symbols in a single OFDM frame, i.e., the DFT size
