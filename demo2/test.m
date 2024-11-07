@@ -4,20 +4,22 @@ clear; close all; clc;
 
 %% Parameters
 SNR= 15;
-M = 8; % QAM constellation size
+M = 16; % QAM constellation size
 load("channel.mat");
 L = 300; % user defined channel order
 channel = h; % Impulse response of channel
 N = 2048; % Total number of symbols in a single OFDM frame, i.e., the DFT size
 Lcp = max(10, length(channel)); % Cyclic prefix length, chosen to be longer than the channel impulse response
-BWusage = 0.6;
+BWusage = 1;
+Gamma = 10;
 
 %% Channel effect experiment
 % Convert BMP image to bitstream
 [bitStream, imageData, colorMap, imageSize, bitsPerPixel] = imagetobitstream('image.bmp');
 
-CHANNEL = fft(channel, N);
-CHANNEL = CHANNEL(2:N/2);
+% Calculate the channel frequency response
+H = fft(channel, N);
+CHANNEL = H(2:N/2);
 sorted = sort(abs(CHANNEL), 'descend');
 
 % ON_OFF_mask
@@ -25,11 +27,37 @@ idx = max(floor(BWusage*length(CHANNEL)), 1);
 threshold = sorted(idx);
 ON_OFF_mask = abs(CHANNEL) >= threshold;
 
+noisePower = 0;
+for i = 1:N/2-1
+    noisePower = noisePower + abs(CHANNEL(i)).^2;
+end
+
+% Calculate bit allocation (adaptive bitloading)
+M_k = zeros(length(CHANNEL), 1);
+for k = 1:length(CHANNEL)
+    b_k = floor(log2(1 + ((N/2-1) * db2pow(SNR) * abs(CHANNEL(k)).^2) / (Gamma * noisePower)));
+    if b_k<1
+        b_k = 1;
+    end
+    M_k(k) = 2^b_k;
+end
+
+sm = 0;
+for k = 1:length(M_k)
+    sm = sm + log2(M_k(k));
+end
+
+padLength = sm - mod(length(bitStream),sm);
+if padLength ~= sm
+    bitStream = [bitStream; zeros(padLength, 1)];
+end
+l = length(bitStream)/sm;
+
 % QAM modulation
-qamStream = qam_mod(bitStream, M);
+qamStream = adaptive_qam_mod(bitStream, M_k, l);
 
 % QAM constellation visualization
-%scatterplot(qamStream);
+scatterplot(qamStream);
 
 % OFDM modulation
 ofdmStream = ofdm_mod(qamStream, N, Lcp, ON_OFF_mask);
@@ -42,10 +70,10 @@ rxOfdmStream = awgn(rxOfdmStream, SNR, "measured");
 rxQamStream = ofdm_demod(rxOfdmStream, N, Lcp, length(qamStream), channel, ON_OFF_mask, 1);
 
 % QAM constellation visualization
-%scatterplot(rxQamStream);
+scatterplot(rxQamStream);
 
 % QAM demodulation
-rxBitStream = qam_demod(rxQamStream, M, length(bitStream));
+rxBitStream = adaptive_qam_demod(rxQamStream, M_k, length(bitStream), l);
 
 % Compute BER
 berTransmission = ber(bitStream,rxBitStream);
