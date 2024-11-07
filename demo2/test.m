@@ -10,7 +10,7 @@ L = 300; % user defined channel order
 channel = h; % Impulse response of channel
 N = 1024; % Total number of symbols in a single OFDM frame, i.e., the DFT size
 Lcp = max(10, length(channel)); % Cyclic prefix length, chosen to be longer than the channel impulse response
-BWusage = 0.4;
+BWusage = 0.6;
 Gamma = 10;
 
 %% Channel effect experiment
