@@ -27,7 +27,7 @@ ofdmStream = ofdm_mod(qamStream, N, Lcp); % Should be of length N+LcpX1
 
 % Channel
 rxOfdmStream = fftfilt(channel, ofdmStream);
-rxOfdmStream = awgn(rxOfdmStream, SNR);
+rxOfdmStream = awgn(rxOfdmStream, SNR, "measured");
 
 % OFDM demodulation
 rxQamStream = ofdm_demod(rxOfdmStream, N, Lcp, length(qamStream));

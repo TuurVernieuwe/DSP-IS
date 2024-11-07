@@ -3,7 +3,7 @@ clear; clc; close all;
 
 %% Parameters
 L = 10507; % Scalar length of binary sequence [samples]
-SNRs = -20:2:40; % List of SNR values to consider [dB]
+SNRs = -30:2:50; % List of SNR values to consider [dB]
 N = 1:6; % List of number of bits per QAM symbol to consider
 
 %% Calculate BER for each constellation-SNR combination.

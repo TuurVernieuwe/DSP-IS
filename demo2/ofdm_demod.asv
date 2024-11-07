@@ -105,8 +105,7 @@ if equalization
     QAM_matrix = QAM_matrix ./ CHANNELS(2:N/2); % Equalization
 end
 % Apply on-off mask (you can ignore this until exercise 4.3)
-QAM_matrix_big = QAM_matrix;
-bins = sum(ON_OFF_mask);
+bins = sum(QAM_matrix);
 QAM_matrix = zeros(bins, size(QAM_matrix_big, 2));
 row = 1;
 for i=1:length(ON_OFF_mask)
@@ -115,7 +114,6 @@ for i=1:length(ON_OFF_mask)
         row = row + 1;
     end
 end
-
 % Supply streamLength number of symbols (you can ignore this until exercise 4.2)
 QAM_seq = reshape(QAM_matrix, [], 1);
 data_seq = QAM_seq(1:streamLength);

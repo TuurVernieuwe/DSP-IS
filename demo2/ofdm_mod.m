@@ -1,4 +1,4 @@
-function [ OFDM_seq, nbPackets ] = ofdm_mod(QAM_seq, N, Lcp, varargin)
+function [ OFDM_seq, nbPackets ] = ofdm_mod( QAM_seq, N, Lcp, varargin)
 % OFDM modulation
 %
 % INPUT:
@@ -50,14 +50,24 @@ end
 
 %% Construct the OFDM sequence
 % Put the QAM symbols into matrix of N/2-1 rows
-padlength = N/2-1 - mod(length(QAM_seq), N/2-1);
-if padlength ~= N/2-1
+bins = sum(ON_OFF_mask);
+padlength = bins - mod(length(QAM_seq), bins);
+if padlength ~= bins
     QAM_seq = [QAM_seq; zeros(padlength, 1)];
 end
-QAM_matrix = reshape(QAM_seq, N/2-1, []);
+
+QAM_matrix_small = reshape(QAM_seq, bins, []); 
+QAM_matrix = zeros(N/2-1, size(QAM_matrix_small, 2));
 
 % Apply on-off mask (you can ignore this until exercise 4.3)
-QAM_matrix = ON_OFF_mask .* QAM_matrix;
+row_small = 1;
+for i = 1:length(ON_OFF_mask)
+    if ON_OFF_mask(i)
+        QAM_matrix(i, :) = QAM_matrix_small(row_small, :);
+        row_small = row_small + 1;
+    end
+end
+
 
 % Construct the OFDM frames according to Figure 2 in session 3
 fOFDM_frame = [zeros(1, size(QAM_matrix, 2)); QAM_matrix; zeros(1, size(QAM_matrix, 2)); conj(flip(QAM_matrix))];
@@ -66,7 +76,7 @@ fOFDM_frame = [zeros(1, size(QAM_matrix, 2)); QAM_matrix; zeros(1, size(QAM_matr
 OFDM_frame = ifft(fOFDM_frame);
 
 % Add in the cyclic prefix
-OFDM_frame = [OFDM_frame(end-Lcp+1:end,:); OFDM_frame];
+OFDM_frame = [OFDM_frame(end-Lcp+1:end, :); OFDM_frame];
 
 % Serialize the set of OFDM frames
 OFDM_seq = reshape(OFDM_frame, [], 1);

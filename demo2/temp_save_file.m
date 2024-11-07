@@ -55,7 +55,7 @@ plot(1:H, berTransmissions);
 ylabel("BER");
 xlabel("Transfer function H(z)");
 set(gca,'xtick',1:H)
-title('SNRs = 15:5:35')
+title('SNRs = 10:5:30')
 grid on
 
 % Construct image from bitstream
