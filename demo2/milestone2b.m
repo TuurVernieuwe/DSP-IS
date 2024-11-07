@@ -42,7 +42,7 @@ rxOfdmStream = awgn(rxOfdmStream, SNR, "measured");
 rxQamStream = ofdm_demod(rxOfdmStream, N, Lcp, length(qamStream), channel, ON_OFF_mask, 1);
 
 % QAM constellation visualization
-%scatterplot(rxQamStream);
+scatterplot(rxQamStream);
 
 % QAM demodulation
 rxBitStream = qam_demod(rxQamStream, M, length(bitStream));

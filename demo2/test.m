@@ -8,9 +8,9 @@ M = 16; % QAM constellation size
 load("channel.mat");
 L = 300; % user defined channel order
 channel = h; % Impulse response of channel
-N = 2048; % Total number of symbols in a single OFDM frame, i.e., the DFT size
+N = 1024; % Total number of symbols in a single OFDM frame, i.e., the DFT size
 Lcp = max(10, length(channel)); % Cyclic prefix length, chosen to be longer than the channel impulse response
-BWusage = 1;
+BWusage = 0.4;
 Gamma = 10;
 
 %% Channel effect experiment
@@ -49,12 +49,12 @@ end
 
 padLength = sm - mod(length(bitStream),sm);
 if padLength ~= sm
-    bitStream = [bitStream; zeros(padLength, 1)];
+    bitStream_padded = [bitStream; zeros(padLength, 1)];
 end
-l = length(bitStream)/sm;
+l = length(bitStream_padded)/sm;
 
 % QAM modulation
-qamStream = adaptive_qam_mod(bitStream, M_k, l);
+qamStream = adaptive_qam_mod(bitStream_padded, M_k, l);
 
 % QAM constellation visualization
 scatterplot(qamStream);
