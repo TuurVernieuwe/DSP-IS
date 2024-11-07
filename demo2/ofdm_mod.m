@@ -56,6 +56,9 @@ if padlength ~= N/2-1
 end
 QAM_matrix = reshape(QAM_seq, N/2-1, []);
 
+% Apply on-off mask (you can ignore this until exercise 4.3)
+QAM_matrix = ON_OFF_mask .* QAM_matrix;
+
 % Construct the OFDM frames according to Figure 2 in session 3
 fOFDM_frame = [zeros(1, size(QAM_matrix, 2)); QAM_matrix; zeros(1, size(QAM_matrix, 2)); conj(flip(QAM_matrix))];
 

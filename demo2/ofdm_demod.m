@@ -17,7 +17,7 @@ function [ data_seq, CHANNELS ] = ofdm_demod(OFDM_seq, N, Lcp, varargin )
 %                               (you can ignore this until exercise 4.3)
 % equalization  1X1             If 1 channel equalization is performed, if 0 no
 %                               channel equalization is performed.
-%
+% % % % % % % % % % % % %
 % For session 5
 % streamLength  1X1             Length of QAM sequence after call to qammod [samples].
 % ON_OFF_mask   (N/2-1)X1       Mask denoting the bins to use in range (X_1...X_(N/2-1)) with a 1 denothing
@@ -58,11 +58,11 @@ function [ data_seq, CHANNELS ] = ofdm_demod(OFDM_seq, N, Lcp, varargin )
 %% Extract input arguments
 if nargin == 4 % Session 3
     streamLength = varargin{1};
-elseif nargin == 5 % Session 4
+elseif nargin == 7 % Session 4
     streamLength = varargin{1};
     channel = varargin{2};
-    % ON_OFF_mask = varargin{3};
-    % equalization = varargin{4};
+    ON_OFF_mask = varargin{3};
+    equalization = varargin{4};
 elseif nargin == 6 % Session 5
     streamLength = varargin{1};
     ON_OFF_mask = varargin{2};
@@ -98,18 +98,14 @@ QAM_matrix = fft(OFDM_matrix);
 QAM_matrix = QAM_matrix(2:N/2, :);
 
 % Apply channel equalisation (you can ignore this until exercise 4.2.3)
-if exist('channel', 'var')
+if equalization
     CHANNELS = fft(channel, N); % Compute CFR with N points
     % Equalize: scale each subcarrier by the inverse of the channel response
     QAM_matrix = QAM_matrix ./ CHANNELS(2:N/2); % Equalization
-else
-    CHANNELS = []; % No equalization applied
 end
-% Apply on-off mask (you can ignore this until exercise 4.3)
-% QAM_matrix = ;
 
 % Apply on-off mask (you can ignore this until exercise 4.3)
-% QAM_matrix = ;
+QAM_matrix = ON_OFF_mask .* QAM_matrix;
 
 % Supply streamLength number of symbols (you can ignore this until exercise 4.2)
 QAM_seq = reshape(QAM_matrix, [], 1);
