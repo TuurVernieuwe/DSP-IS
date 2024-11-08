@@ -103,8 +103,8 @@ if equalization
 
     % Equalize: scale each subcarrier by the inverse of the channel response
     QAM_matrix = QAM_matrix ./ CHANNEL(2:N/2); % Equalization
-elseif exist("trainblock", "var")
-    TRAINBLOCK = fft(trainblock, N);
+elseif exist()
+    sfds
 end
 
 % Apply on-off mask (you can ignore this until exercise 4.3)

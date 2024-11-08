@@ -3,13 +3,13 @@
 clear; close all; clc;
 
 %% Parameters
-SNR= 15;
-M = 16; % QAM constellation size
+SNR= 30;
+M = 32; % QAM constellation size
 load("channel_session4.mat");
 L = 300; % user defined channel order
 channel = h; % Impulse response of channel
-N = 2048; % Total number of symbols in a single OFDM frame, i.e., the DFT size
-Lcp = max(10, length(channel)); % Cyclic prefix length, chosen to be longer than the channel impulse response
+N = 512; % Total number of symbols in a single OFDM frame, i.e., the DFT size
+Lcp = 500; % Cyclic prefix length, chosen to be longer than the channel impulse response
 BWusage = 0.6;
 
 %% Channel effect experiment
