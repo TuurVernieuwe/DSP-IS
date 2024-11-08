@@ -3,14 +3,14 @@
 clear; close all; clc;
 
 %% Parameters
-SNR= 5;
+SNR= 15;
 M = 16; % QAM constellation size
-load("channel.mat");
+load("channel_session4.mat");
 L = 300; % user defined channel order
 channel = h; % Impulse response of channel
 N = 1024; % Total number of symbols in a single OFDM frame, i.e., the DFT size
 Lcp = max(10, length(channel)); % Cyclic prefix length, chosen to be longer than the channel impulse response
-BWusage = 0.6;
+BWusage = 0.8;
 Gamma = 10;
 
 %% Channel effect experiment
@@ -18,8 +18,8 @@ Gamma = 10;
 [bitStream, imageData, colorMap, imageSize, bitsPerPixel] = imagetobitstream('image.bmp');
 
 % Calculate the channel frequency response
-CHANNEL = fft(channel, N);
-CHANNEL = CHANNEL(2:N/2);
+H = fft(channel, N);
+CHANNEL = H(2:N/2);
 sorted = sort(abs(CHANNEL), 'descend');
 
 % ON_OFF_mask
@@ -29,17 +29,16 @@ ON_OFF_mask = abs(CHANNEL) >= threshold;
 
 noisePower = 0;
 for i = 1:N/2-1
-    noisePower = noisePower + abs(CHANNEL(i)).^2;
+    noisePower = noisePower + abs(CHANNEL(i))^2;
 end
 
 % Calculate bit allocation (adaptive bitloading)
-M_k = zeros(length(CHANNEL), 1);
+M_k = [];
 for k = 1:length(CHANNEL)
-    b_k = floor(log2(1 + ((N/2-1) * db2pow(SNR) * abs(CHANNEL(k)).^2) / (Gamma * noisePower)));
-    if b_k<1
-        b_k = 1;
+    b_k = floor(log2(1 + ((N/2-1) * db2pow(SNR) * abs(CHANNEL(k))^2) / (Gamma * noisePower)));
+    if b_k>=y
+        M_k = [M_k; 2^b_k];
     end
-    M_k(k) = 2^b_k;
 end
 
 sm = 0;
@@ -49,12 +48,12 @@ end
 
 padLength = sm - mod(length(bitStream),sm);
 if padLength ~= sm
-    bitStream = [bitStream; zeros(padLength, 1)];
+    bitStream_padded = [bitStream; zeros(padLength, 1)];
 end
-l = length(bitStream)/sm;
+l = length(bitStream_padded)/sm;
 
 % QAM modulation
-qamStream = adaptive_qam_mod(bitStream, M_k, l);
+qamStream = adaptive_qam_mod(bitStream_padded, M_k, l);
 
 % QAM constellation visualization
 scatterplot(qamStream);

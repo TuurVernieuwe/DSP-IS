@@ -29,7 +29,7 @@ ON_OFF_mask = abs(CHANNEL) >= threshold;
 qamStream = qam_mod(bitStream, M);
 
 % QAM constellation visualization
-%scatterplot(qamStream);
+scatterplot(qamStream);
 
 % OFDM modulation
 ofdmStream = ofdm_mod(qamStream, N, Lcp, ON_OFF_mask);
@@ -53,7 +53,7 @@ berTransmission = ber(bitStream,rxBitStream);
 % Construct image from bitstream
 imageRx = bitstreamtoimage(rxBitStream, imageSize, bitsPerPixel);
 
-% Plot images
+% % Plot images
 figure
 subplot(2,1,1); colormap(colorMap); image(imageData); axis image; title('Original image'); drawnow;
 subplot(2,1,2); colormap(colorMap); image(imageRx); axis image; title('Received image'); drawnow;
