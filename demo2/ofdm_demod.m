@@ -109,16 +109,14 @@ elseif exist("trainblock", "var")
 end
 
 % Apply on-off mask (you can ignore this until exercise 4.3)
-if ON_OFF_mask ~= ones(N/2-1,1)
-    QAM_matrix_big = QAM_matrix;
-    bins = sum(ON_OFF_mask);
-    QAM_matrix = zeros(bins, size(QAM_matrix_big, 2));
-    row = 1;
-    for i=1:length(ON_OFF_mask)
-        if ON_OFF_mask(i)
-            QAM_matrix(row, :) = QAM_matrix_big(i, :);
-            row = row + 1;
-        end
+QAM_matrix_big = QAM_matrix;
+bins = sum(ON_OFF_mask);
+QAM_matrix = zeros(bins, size(QAM_matrix_big, 2));
+row = 1;
+for i=1:length(ON_OFF_mask)
+    if ON_OFF_mask(i)
+        QAM_matrix(row, :) = QAM_matrix_big(i, :);
+        row = row + 1;
     end
 end
 
