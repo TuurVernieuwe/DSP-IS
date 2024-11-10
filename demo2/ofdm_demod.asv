@@ -1,4 +1,4 @@
-function [ data_seq, CHANNEL ] = ofdm_demod(OFDM_seq, N, Lcp, varargin )
+function [ data_seq, CHANNELS ] = ofdm_demod(OFDM_seq, N, Lcp, varargin )
 % OFDM demodulation
 %
 % INPUT:
@@ -98,13 +98,14 @@ QAM_matrix = fft(OFDM_matrix);
 QAM_matrix = QAM_matrix(2:size(QAM_matrix, 1)/2, :);
 
 % Apply channel equalisation (you can ignore this until exercise 4.2.3)
-if equalization
-    CHANNEL = fft(channel, N); % Compute CFR with N points
-
-    % Equalize: scale each subcarrier by the inverse of the channel response
-    QAM_matrix = QAM_matrix ./ CHANNEL(2:N/2); % Equalization
-elseif exist()
-    sfds
+if exist("equalization", "var")
+    if equalization
+        CHANNELS = fft(channel, N);
+        QAM_matrix = QAM_matrix ./ CHANNELS(2:N/2);
+    end
+elseif exist("trainblock", "var")
+    CHANNELS = sum(QAM_matrix, 2) ./ (100*trainblock);
+    QAM_matrix = QAM_matrix ./ CHANNELS;
 end
 
 % Apply on-off mask (you can ignore this until exercise 4.3)
@@ -120,8 +121,6 @@ if ON_OFF_mask ~= ones(N/2-1,1)
         end
     end
 end
-
-% Estimate impulse response in frequency domain
 
 % Supply streamLength number of symbols (you can ignore this until exercise 4.2)
 QAM_seq = reshape(QAM_matrix, [], 1);

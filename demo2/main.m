@@ -51,7 +51,7 @@ for h=1:H % Loop across different transfer functions
 end
 
 % Plot results.
-plot(1:H, berTransmissions);
+semilogy(1:H, berTransmissions);
 ylabel("BER");
 xlabel("Transfer function H(z)");
 set(gca,'xtick',1:H)
@@ -68,7 +68,7 @@ subplot(2,1,2); colormap(colorMap); image(imageRx); axis image; title('Received 
 
 %%
 N = 2048;
-load("channel_session4.mat"); %'acoustic channel impulse response here';
+load("channel_session4.mat");
 channel = h;
 CHANNEL = fft(channel, N);
 CHANNEL = CHANNEL(2:N/2);

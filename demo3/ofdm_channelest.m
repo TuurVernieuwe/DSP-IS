@@ -11,55 +11,58 @@ SNR = 35; % SNR of transmission [dB]
 accoustic_transmission = 0; % If 1 acoustic transmission occurs, if 0 a simulated transmission.
 
 %% Construct train block.
-train_bits = randi([0 1], N/2-1, 1); % Generate a random vector of bits corresponding to a single OFDM frame
+train_bits = randi([0 1], log2(M)*(N/2-1), 1); % Generate a random vector of bits corresponding to a single OFDM frame
 train_block = qam_mod(train_bits, M); % QAM modulate that frame
-train_stream = repmat(train_block, 100); % Repeat the training QAM frame
-Tx = ofdm_mod(train_stream, N, Lcp, ones(N/2-1)); % OFDM modulate the QAM stream
+train_stream = repmat(train_block, 100, 1); % Repeat the training QAM frame
+Tx = ofdm_mod(train_stream, N, Lcp, ones(N/2-1,1)); % OFDM modulate the QAM stream
 
 %% Transmit train block.
 if ~accoustic_transmission % Exercise 5.1
-    load('channel_session5.mat');
+    %load('channel_session5.mat');
+    load('channel_session4.mat')
     aligned_Rx = fftfilt(h, Tx);
     aligned_Rx = awgn(aligned_Rx, SNR, "measured");
 else % Exercise 5.2
-    [] = initparams();
+    [simin,nbsecs,fs] = initparams(toplay, fs);
     sim('recplay');
     Rx = simout.signals.values(:,1);
     aligned_Rx = alignIO(); % Align input and output
 end
 
 %% OFDM Demodulate
-[qam_stream, CHANNEL] = ofdm_demod(aligned_Rx, N, Lcp, length(train_stream), ones(N/2-1, 1));
+[qam_stream, CHANNEL] = ofdm_demod(aligned_Rx, N, Lcp, length(train_stream), ones(N/2-1, 1), train_block);
 
 %% QAM Demodulate
-rx_bits = qam_demod(qam_stream);
+rx_bits = qam_demod(qam_stream, M, length(train_bits));
 
 %% BER
-BER = ber()
+BER = ber(train_bits, rx_bits)
 
 %% Plot (real and) estimated channel.
 if ~accoustic_transmission
     figure;
     subplot(2,1,1)
-    plot();
+    plot(0:length(h)-1, h);
     title('Real impulse response')
-    xlabel('')
-    ylabel('')
+    xlabel('k')
+    ylabel('h[k]')
     subplot(2,1,2)
-    plot();
+    H = fft(h, N);
+    plot(1:N/2-1, real(H(2:N/2)));
     title('Real frequency response')
-    xlabel('')
-    ylabel('')    
+    xlabel('carrier n')
+    ylabel('H(n)')
 end
 
 figure;
 subplot(2,1,1)
-plot();
+est_h = ifft([0; CHANNEL], N);
+plot(real(est_h(1:length(h))));
 title('Estimated impulse response')
-xlabel('')
-ylabel('')
+xlabel('k')
+ylabel('h[k]')
 subplot(2,1,2)
-plot();
+plot(1:N/2-1, real(CHANNEL));
 title('Estimated frequency response')
-xlabel('')
-ylabel('')
+xlabel('carrier n')
+ylabel('H(n)')

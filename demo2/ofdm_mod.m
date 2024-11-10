@@ -56,10 +56,9 @@ if padlength ~= bins
     QAM_seq = [QAM_seq; zeros(padlength, 1)];
 end
 
-QAM_matrix_small = reshape(QAM_seq, bins, []); 
-QAM_matrix = zeros(N/2-1, size(QAM_matrix_small, 2));
-
 % Apply on-off mask (you can ignore this until exercise 4.3)
+QAM_matrix_small = reshape(QAM_seq, bins, []);
+QAM_matrix = zeros(N/2-1, size(QAM_matrix_small, 2));
 row_small = 1;
 for i = 1:length(ON_OFF_mask)
     if ON_OFF_mask(i)
