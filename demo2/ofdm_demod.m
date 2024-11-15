@@ -104,8 +104,13 @@ if exist("equalization", "var")
         QAM_matrix = QAM_matrix ./ CHANNELS(2:N/2);
     end
 elseif exist("trainblock", "var")
-    CHANNELS = sum(QAM_matrix, 2) ./ (100*trainblock);
+    CHANNELS = zeros(N/2-1, 1);
+    for i=1:1:N/2-1
+        CHANNELS(i) = repmat(trainblock(i), 100, 1)\QAM_matrix(i,:).';
+    end
     QAM_matrix = QAM_matrix ./ CHANNELS;
+    %CHANNELS = sum(QAM_matrix, 2) ./ (100*trainblock);
+    %QAM_matrix = QAM_matrix ./ CHANNELS;
 end
 
 % Apply on-off mask (you can ignore this until exercise 4.3)

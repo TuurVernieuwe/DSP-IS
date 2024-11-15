@@ -31,7 +31,7 @@ function [ OFDM_seq, nbPackets ] = ofdm_mod( QAM_seq, N, Lcp, varargin)
 % OUTPUT:
 % OFDM_seq      T3X1        Time domain OFDM sequence of length T3 samples.
 % nbPackets     1X1         Number of packets, where one packet consist of
-%                           a training and data frame. (you can ignore 
+%                           a training and data packet. (you can ignore 
 %                           this until exercise 6.1.1)
 
 %% Extract data

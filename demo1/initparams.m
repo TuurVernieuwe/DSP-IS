@@ -28,7 +28,7 @@ assert(c==1,'toplay is not a column vector');
 if nargin == 3
     % Append the synchronisation pulse and zeros at least equal to the length
     % of the IR before toplay
-    toplay;
+    toplay = [sync_pulse; zeros(fs/10, 1); toplay];
 end
 
 %% Append silence to toplay
