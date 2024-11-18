@@ -47,27 +47,52 @@ BER = ber(train_bits, rx_bits)
 if ~accoustic_transmission
     figure;
     subplot(2,1,1)
-    plot(0:length(h)-1, h);
+    plot(1:length(h), h);
     title('Real impulse response')
     xlabel('k')
     ylabel('h[k]')
     subplot(2,1,2)
     H = fft(h, N);
-    plot(1:N/2-1, real(H(2:N/2)));
+    plot(1:N/2-1, pow2db(abs(H(2:N/2)).^2));
     title('Real frequency response')
     xlabel('carrier n')
     ylabel('H(n)')
-end
 
-figure;
-subplot(2,1,1)
-est_h = ifft([0; CHANNEL; 0; flip(conj(CHANNEL))], N);
-plot(0:length(est_h)-1, est_h);
-title('Estimated impulse response')
-xlabel('k')
-ylabel('h[k]')
-subplot(2,1,2)
-plot(1:N/2-1, pow2db(abs(CHANNEL).^2));
-title('Estimated frequency response')
-xlabel('carrier n')
-ylabel('H(n)')
+    figure;
+    subplot(2,1,1)
+    est_h = ifft([0; CHANNEL; 0; flip(conj(CHANNEL))], N);
+    plot(real(est_h(1:length(h))));
+    title('Estimated impulse response')
+    xlabel('k')
+    ylabel('h[k]')
+    subplot(2,1,2)
+    plot(1:N/2-1, pow2db(abs(CHANNEL).^2));
+    title('Estimated frequency response')
+    xlabel('carrier n')
+    ylabel('H(n)')
+
+    figure;
+    subplot(2, 1, 1)
+    plot(0:length(h)-1, h-est_h(1:length(h)));
+    title('difference in real impulse response')
+    xlabel('k')
+    ylabel('difference')
+    subplot(2, 1, 2)
+    plot(1:N/2-1, real(H(2:N/2)) - real(CHANNEL))
+    title('difference in estimated impulse response')
+    xlabel('carrier n')
+    ylabel('difference')
+else
+    figure;
+    subplot(2,1,1)
+    est_h = ifft([0; CHANNEL; 0; flip(conj(CHANNEL))], N);
+    plot(0:length(est_h)-1, est_h);
+    title('Estimated impulse response')
+    xlabel('k')
+    ylabel('h[k]')
+    subplot(2,1,2)
+    plot(1:N/2-1, pow2db(abs(CHANNEL).^2));
+    title('Estimated frequency response')
+    xlabel('carrier n')
+    ylabel('H(n)')
+end
