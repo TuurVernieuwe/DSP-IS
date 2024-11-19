@@ -8,7 +8,7 @@ N = 1024; % Total number of symbols in a single OFDM frame, i.e., the DFT size
 Lcp = 600; % Cyclic prefix length [samples]
 M = 16; % QAM constellation size
 SNR = 35; % SNR of transmission [dB]
-accoustic_transmission = 1; % If 1 acoustic transmission occurs, if 0 a simulated transmission.
+accoustic_transmission = 0; % If 1 acoustic transmission occurs, if 0 a simulated transmission.
 t = 0:1/fs:1;
 f_sync = 5000;
 

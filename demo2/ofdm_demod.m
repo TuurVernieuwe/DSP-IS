@@ -1,4 +1,5 @@
 function [ data_seq, CHANNELS ] = ofdm_demod(OFDM_seq, N, Lcp, varargin )
+global data_seq CHANNELS
 % OFDM demodulation
 %
 % INPUT:
@@ -85,48 +86,104 @@ elseif nargin == 10 % Session 7
 end
 
 %% Perform OFDM demodulation
-% Reshape the received OFDM sequence (serial to parallel conversion)
-OFDM_matrix = reshape(OFDM_seq, N+Lcp, []);
-
-% Remove the cyclic prefix (you can ignore this until exercise 3.2.4)
-OFDM_matrix = OFDM_matrix(Lcp+1:end, :);
-
-% Apply fft operation
-QAM_matrix = fft(OFDM_matrix);
-
-% Remove the redundant parts of QAM_matrix
-QAM_matrix = QAM_matrix(2:size(QAM_matrix, 1)/2, :);
-
-% Apply channel equalisation (you can ignore this until exercise 4.2.3)
-if exist("equalization", "var")
-    if equalization
-        CHANNELS = fft(channel, N);
-        QAM_matrix = QAM_matrix ./ CHANNELS(2:N/2);
+if ~(nargin == 9)
+    % Reshape the received OFDM sequence (serial to parallel conversion)
+    OFDM_matrix = reshape(OFDM_seq, N+Lcp, []);
+    
+    % Remove the cyclic prefix (you can ignore this until exercise 3.2.4)
+    OFDM_matrix = OFDM_matrix(Lcp+1:end, :);
+    
+    % Apply fft operation
+    QAM_matrix = fft(OFDM_matrix);
+    
+    % Remove the redundant parts of QAM_matrix
+    QAM_matrix = QAM_matrix(2:size(QAM_matrix, 1)/2, :);
+    
+    % Apply channel equalisation (you can ignore this until exercise 4.2.3)
+    if exist("equalization", "var")
+        if equalization
+            CHANNELS = fft(channel, N);
+            QAM_matrix = QAM_matrix ./ CHANNELS(2:N/2);
+        end
+    elseif exist("trainblock", "var")
+        CHANNELS = zeros(N/2-1, 1);
+        for i=1:1:N/2-1
+            CHANNELS(i) = repmat(trainblock(i), 100, 1)\QAM_matrix(i,:).';
+        end
+        QAM_matrix = QAM_matrix ./ CHANNELS;
     end
-elseif exist("trainblock", "var")
-    CHANNELS = zeros(N/2-1, 1);
-    for i=1:1:N/2-1
-        CHANNELS(i) = repmat(trainblock(i), 100, 1)\QAM_matrix(i,:).';
+    
+    % Apply on-off mask (you can ignore this until exercise 4.3)
+    QAM_matrix_big = QAM_matrix;
+    bins = sum(ON_OFF_mask);
+    QAM_matrix = zeros(bins, size(QAM_matrix_big, 2));
+    row = 1;
+    for i=1:length(ON_OFF_mask)
+        if ON_OFF_mask(i)
+            QAM_matrix(row, :) = QAM_matrix_big(i, :);
+            row = row + 1;
+        end
     end
-    QAM_matrix = QAM_matrix ./ CHANNELS;
-    %CHANNELS = sum(QAM_matrix, 2) ./ (100*trainblock);
-    %QAM_matrix = QAM_matrix ./ CHANNELS;
-end
+    
+    % Supply streamLength number of symbols (you can ignore this until exercise 4.2)
+    QAM_seq = reshape(QAM_matrix, [], 1);
+    data_seq = QAM_seq(1:streamLength);
 
-% Apply on-off mask (you can ignore this until exercise 4.3)
-QAM_matrix_big = QAM_matrix;
-bins = sum(ON_OFF_mask);
-QAM_matrix = zeros(bins, size(QAM_matrix_big, 2));
-row = 1;
-for i=1:length(ON_OFF_mask)
-    if ON_OFF_mask(i)
-        QAM_matrix(row, :) = QAM_matrix_big(i, :);
-        row = row + 1;
+
+else
+    data_seq = [];
+    for i = 1:nbPackets
+        % Reshape the received OFDM sequence (serial to parallel conversion)
+        OFDM_matrix = reshape(OFDM_seq((i-1)*(Lt+Ld)*(N+Lcp)+1:i*(Lt+Ld)*(N+Lcp)), N+Lcp, []);
+        
+        % Remove the cyclic prefix (you can ignore this until exercise 3.2.4)
+        OFDM_matrix = OFDM_matrix(Lcp+1:end, :);
+        
+        % Apply fft operation
+        QAM_matrix = fft(OFDM_matrix);
+        
+        % Remove the redundant parts of QAM_matrix
+        QAM_matrix = QAM_matrix(2:size(QAM_matrix, 1)/2, :);
+
+        trainblocks_this_iteration = QAM_matrix(:, 1:Lt);
+
+        %remove trainblocks
+        QAM_matrix = QAM_matrix(:, Lt+1:end);
+        
+        % Apply channel equalisation (you can ignore this until exercise 4.2.3)
+        if exist("equalization", "var")
+            if equalization
+                CHANNELS = fft(channel, N);
+                QAM_matrix = QAM_matrix ./ CHANNELS(2:N/2);
+            end
+        elseif exist("trainblock", "var")
+            CHANNELS = zeros(N/2-1, 1);
+            for i=1:1:N/2-1
+                CHANNELS(i) = mean(trainblocks_this_iteration(i, :) ./ trainblock(i));
+            end
+            QAM_matrix = QAM_matrix ./ CHANNELS;
+        end
+
+        %trim the trainblocks away
+        % QAM_matrix = QAM_matrix(:, Lt+1:end);
+        
+        % Apply on-off mask (you can ignore this until exercise 4.3)
+        QAM_matrix_big = QAM_matrix;
+        bins = sum(ON_OFF_mask);
+        QAM_matrix = zeros(bins, size(QAM_matrix_big, 2));
+        row = 1;
+        for i=1:length(ON_OFF_mask)
+            if ON_OFF_mask(i)
+                QAM_matrix(row, :) = QAM_matrix_big(i, :);
+                row = row + 1;
+            end
+        end
+        
+        % Supply streamLength number of symbols (you can ignore this until exercise 4.2)
+        QAM_seq = reshape(QAM_matrix, [], 1);
+        data_seq = [data_seq; QAM_seq];
     end
-end
+    data_seq = data_seq(1:streamLength);
 
-% Supply streamLength number of symbols (you can ignore this until exercise 4.2)
-QAM_seq = reshape(QAM_matrix, [], 1);
-data_seq = QAM_seq(1:streamLength);
 
 end
