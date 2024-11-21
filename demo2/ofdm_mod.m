@@ -49,7 +49,7 @@ elseif nargin == 6
 end
 
 %% Construct the OFDM sequence
-% Put the QAM symbols into matrix of N/2-1 rows
+% Padding to make the QAM_seq a multiple of used bins
 bins = sum(ON_OFF_mask);
 padlength = bins - mod(length(QAM_seq), bins);
 if padlength ~= bins
@@ -57,6 +57,7 @@ if padlength ~= bins
 end
 
 % Apply on-off mask (you can ignore this until exercise 4.3)
+% Construct QAM-matrix
 QAM_matrix_small = reshape(QAM_seq, bins, []);
 QAM_matrix = zeros(N/2-1, size(QAM_matrix_small, 2));
 QAM_matrix(logical(ON_OFF_mask), :) = QAM_matrix_small;
@@ -100,7 +101,7 @@ else
     trainpacket = repmat(OFDM_frame_trainblock, Lt, 1);
 
     % Construct serialized packets
-    len = length(OFDM_frame)*(Lt+Ld); % Number of elements in one packet
+    len = size(OFDM_frame, 1)*(Lt+Ld); % Number of elements in one packet
     OFDM_seq = zeros(len*nbPackets, 1);
     for i = 1:nbPackets
         OFDM_seq(1+len*(i-1):len*i) = [trainpacket; reshape(OFDM_frame(:, 1+Ld*(i-1):Ld*i), [], 1)];

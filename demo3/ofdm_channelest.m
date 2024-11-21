@@ -61,7 +61,7 @@ if ~accoustic_transmission
 
     figure;
     subplot(2,1,1)
-    est_h = ifft([0; CHANNELS; 0; flip(conj(CHANNELS))], N);
+    est_h = ifft([0; CHANNELS; 0; flip(conj(CHANNELS))]);
     plot(real(est_h(1:length(h))));
     title('Estimated impulse response')
     xlabel('k')
@@ -88,7 +88,7 @@ if ~accoustic_transmission
 else
     figure;
     subplot(2,1,1)
-    est_h = ifft([0; CHANNELS; 0; flip(conj(CHANNELS))], N);
+    est_h = ifft([0; CHANNELS; 0; flip(conj(CHANNELS))]);
     plot(0:length(est_h)-1, est_h);
     title('Estimated impulse response')
     xlabel('k')
