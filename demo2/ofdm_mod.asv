@@ -84,9 +84,9 @@ else
 
     % Construct the OFDM frames according to Figure 2 in session 3
     fOFDM_frame = [zeros(1, size(QAM_matrix, 2)); QAM_matrix; zeros(1, size(QAM_matrix, 2)); conj(flip(QAM_matrix))];
-    trainblock_ext = zeros(N/2-1, 1);
-    trainblock_ext(logical(ON_OFF_mask)) = trainblock;
-    fOFDM_frame_trainblock = [0; trainblock_ext; 0; conj(flip(trainblock_ext))];
+    trainbl
+    trainblock(logical(ON_OFF_mask))
+    fOFDM_frame_trainblock = [0; trainblock; 0; conj(flip(trainblock))];
     
     % Apply the inverse Fourier transform (IFFT)
     OFDM_frame = ifft(fOFDM_frame);

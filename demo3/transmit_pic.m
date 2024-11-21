@@ -26,7 +26,7 @@ t = 0:1/fs:1;
 
 %% Determine bit loading
 % Channel estimation based on a dummy transmission for bitloading
-train_bits = randi([0 1], log2(M)*sum(ON_OFF_mask), 1); % Generate a random vector of bits
+train_bits = randi([0 1], log2(M)*(N/2-1), 1); % Generate a random vector of bits
 trainblock = qam_mod(train_bits, M); % QAM modulate
 
 if bitloading_flag
@@ -54,6 +54,7 @@ if bitloading_flag
         idx = max(floor(BW_usage*length(CHANNELS)), 1);
         threshold = sorted(idx);
         ON_OFF_mask = abs(CHANNELS) >= threshold; % ON-OFF mask with 1 denoting the usage of a bin.
+        trainblock = trainblock(logical(ON_OFF_mask));
     elseif bitloading_type == "adaptive"
         M = 0;     % Constellation sizes
     end
@@ -79,7 +80,7 @@ elseif channel == "acoustic"
 end
 
 %% OFDM Demodulate
-[rx_qam, CHANNELS] = ofdm_demod(aligned_Rx, N, Lcp, length(qamStream), ON_OFF_mask, trainblock, Lt, Ld, nbPackets);
+[rx_qam, ~] = ofdm_demod(aligned_Rx, N, Lcp, length(qamStream), ON_OFF_mask, trainblock, Lt, Ld, nbPackets);
 
 %% QAM Demodulate
 rx_bits = qam_demod(rx_qam, M, length(bitStream));
