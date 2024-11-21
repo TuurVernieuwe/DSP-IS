@@ -49,25 +49,24 @@ elseif nargin == 6
 end
 
 %% Construct the OFDM sequence
+% Put the QAM symbols into matrix of N/2-1 rows
+bins = sum(ON_OFF_mask);
+padlength = bins - mod(length(QAM_seq), bins);
+if padlength ~= bins
+    QAM_seq = [QAM_seq; zeros(padlength, 1)];
+end
+
+% Apply on-off mask (you can ignore this until exercise 4.3)
+QAM_matrix_small = reshape(QAM_seq, bins, []);
+QAM_matrix = zeros(N/2-1, size(QAM_matrix_small, 2));
+row_small = 1;
+for i = 1:length(ON_OFF_mask)
+    if ON_OFF_mask(i)
+        QAM_matrix(i, :) = QAM_matrix_small(row_small, :);
+        row_small = row_small + 1;
+    end
+end
 if ~(nargin == 7)
-    % Put the QAM symbols into matrix of N/2-1 rows
-    bins = sum(ON_OFF_mask);
-    padlength = bins - mod(length(QAM_seq), bins);
-    if padlength ~= bins
-        QAM_seq = [QAM_seq; zeros(padlength, 1)];
-    end
-    
-    % Apply on-off mask (you can ignore this until exercise 4.3)
-    QAM_matrix_small = reshape(QAM_seq, bins, []);
-    QAM_matrix = zeros(N/2-1, size(QAM_matrix_small, 2));
-    row_small = 1;
-    for i = 1:length(ON_OFF_mask)
-        if ON_OFF_mask(i)
-            QAM_matrix(i, :) = QAM_matrix_small(row_small, :);
-            row_small = row_small + 1;
-        end
-    end
-    
     % Construct the OFDM frames according to Figure 2 in session 3
     fOFDM_frame = [zeros(1, size(QAM_matrix, 2)); QAM_matrix; zeros(1, size(QAM_matrix, 2)); conj(flip(QAM_matrix))];
     
@@ -81,33 +80,13 @@ if ~(nargin == 7)
     OFDM_seq = reshape(OFDM_frame, [], 1);
 
 else
-    Transmit_now = "trainblock";
-
-    % Put the QAM symbols into matrix of N/2-1 rows
-    % Padding to fit QAM_seq into bins
-    bins = sum(ON_OFF_mask);
-    padlength = bins - mod(length(QAM_seq), bins);
-    if padlength ~= bins
-        QAM_seq = [QAM_seq; zeros(padlength, 1)];
-    end
-    
-    % Apply on-off mask (you can ignore this until exercise 4.3)
-    QAM_matrix_small = reshape(QAM_seq, bins, []);
-    QAM_matrix = zeros(N/2-1, size(QAM_matrix_small, 2));
-    row_small = 1;
-    for i = 1:length(ON_OFF_mask)
-        if ON_OFF_mask(i)
-            QAM_matrix(i, :) = QAM_matrix_small(row_small, :);
-            row_small = row_small + 1;
-        end
-    end
-
     % Padding to make the amount of columns a multiple of Ld
-    OFDM_pad = Ld - mod(size(QAM_matrix, 2), Ld);
-    if ~(Ld == OFDM_pad)
-        QAM_matrix = [QAM_matrix, zeros(size(QAM_matrix, 1), OFDM_pad)];
+    fOFDM_pad = Ld - mod(size(QAM_matrix, 2), Ld);
+    if ~(Ld == fOFDM_pad)
+        QAM_matrix = [QAM_matrix, zeros(size(QAM_matrix, 1), fOFDM_pad)];
     end
-    
+    nbPackets = size(QAM_matrix, 2)/Ld;
+
     % Construct the OFDM frames according to Figure 2 in session 3
     fOFDM_frame = [zeros(1, size(QAM_matrix, 2)); QAM_matrix; zeros(1, size(QAM_matrix, 2)); conj(flip(QAM_matrix))];
     fOFDM_frame_trainblock = [zeros(1, size(trainblock, 2)); trainblock; zeros(1, size(trainblock, 2)); conj(flip(trainblock))];
@@ -119,31 +98,14 @@ else
     % Add in the cyclic prefix
     OFDM_frame = [OFDM_frame(end-Lcp+1:end, :); OFDM_frame];
     OFDM_frame_trainblock = [OFDM_frame_trainblock(end-Lcp+1:end, :); OFDM_frame_trainblock];
+    
+    % Construct serialized training_packet
+    training_packet = repmat(OFDM_frame_trainblock, Lt, 1);
 
-    % Serialize the set of OFDM frames
-    OFDM_seq = [];
-    counter = 1;
-    i = 1;
-    while i <= size(OFDM_frame, 2)
-        if Transmit_now == "trainblock"
-            if counter <= Lt
-                OFDM_seq = [OFDM_seq; OFDM_frame_trainblock];
-                counter = counter + 1;
-            else
-                counter = 1;
-                Transmit_now = "datablock";
-            end
-        else
-            if counter <= Ld
-                OFDM_seq = [OFDM_seq; OFDM_frame(:, i)];
-                i = i + 1;
-                counter = counter + 1;
-            else
-                counter = 1;
-                Transmit_now = "trainblock";
-            end
-        end
+    % Construct serialized packets
+    len = length(OFDM_frame)*(Lt+Ld); % Number of elements in one packet
+    OFDM_seq = zeros(len*nbPackets, 1);
+    for i = 1:nbPackets
+        OFDM_seq(1+len*(i-1):len*i) = [training_packet; reshape(OFDM_frame(:, 1+Ld*(i-1):Ld*i), [], 1)];
     end
-    nbPackets = size(OFDM_frame, 2)/Ld;
-
 end

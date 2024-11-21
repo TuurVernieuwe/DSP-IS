@@ -57,6 +57,7 @@ if ~accoustic_transmission
     title('Real frequency response')
     xlabel('carrier n')
     ylabel('H(n)')
+    xlim([1 N/2-1])
 
     figure;
     subplot(2,1,1)
@@ -70,18 +71,20 @@ if ~accoustic_transmission
     title('Estimated frequency response')
     xlabel('carrier n')
     ylabel('H(n)')
-
+    xlim([1 N/2-1])
+    
     figure;
     subplot(2, 1, 1)
     plot(0:length(h)-1, h-est_h(1:length(h)));
-    title('difference in real impulse response')
+    title('Difference in impulse response')
     xlabel('k')
-    ylabel('difference')
+    ylabel('\Deltah[k]')
     subplot(2, 1, 2)
     plot(1:N/2-1, real(H(2:N/2)) - real(CHANNEL))
-    title('difference in estimated impulse response')
+    title('Difference in frequency response')
     xlabel('carrier n')
-    ylabel('difference')
+    ylabel('\DeltaH(n)')
+    xlim([1 N/2-1])
 else
     figure;
     subplot(2,1,1)

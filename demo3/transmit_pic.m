@@ -46,7 +46,7 @@ if bitloading_flag
     end
 
     % Extract the estimated channels
-    [~, CHANNELS] = ofdm_demod(aligned_Rx, N, Lcp, length(trainblock), ON_OFF_mask, trainblock);
+    [~, CHANNELS] = ofdm_demod(aligned_Rx, N, Lcp, 10*length(trainblock), ON_OFF_mask, trainblock);
 
     if bitloading_type == "on-off"
         % Only keep bins of high energy

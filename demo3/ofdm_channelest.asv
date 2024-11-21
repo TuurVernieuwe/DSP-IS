@@ -11,7 +11,7 @@ SNR = 35; % SNR of transmission [dB]
 accoustic_transmission = 0; % If 1 acoustic transmission occurs, if 0 a simulated transmission.
 t = 0:1/fs:1;
 f_sync = 5000;
-ON_OFF_mask = [0; 0; ones(N/2-2, 1); 0];
+ON_OFF_mask = [ones(N/2-1, 1)];
 
 %% Construct train block.
 train_bits = randi([0 1], log2(M)*sum(ON_OFF_mask), 1); % Generate a random vector of bits corresponding to a single OFDM frame
@@ -74,14 +74,14 @@ if ~accoustic_transmission
     figure;
     subplot(2, 1, 1)
     plot(0:length(h)-1, h-est_h(1:length(h)));
-    title('difference in real impulse response')
+    title('Difference in real impulse response')
     xlabel('k')
-    ylabel('difference')
+    ylabel('Difference')
     subplot(2, 1, 2)
     plot(1:N/2-1, real(H(2:N/2)) - real(CHANNEL))
-    title('difference in estimated impulse response')
+    title('Difference in estimated impulse response')
     xlabel('carrier n')
-    ylabel('difference')
+    ylabel('Difference')
 else
     figure;
     subplot(2,1,1)

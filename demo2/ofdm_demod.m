@@ -106,10 +106,11 @@ if ~(nargin == 9)
         end
     elseif exist("trainblock", "var")
         CHANNELS = zeros(N/2-1, 1);
+        width = size(QAM_matrix, 2);
         index = 1;
         for i=1:N/2-1
             if ON_OFF_mask(i)
-                CHANNELS(i) = repmat(trainblock(index), length(QAM_matrix(i,:).'), 1)\QAM_matrix(i,:).';
+                CHANNELS(i) = repmat(trainblock(index), width, 1)\QAM_matrix(i,:).';
                 index = index + 1;
             end
         end
