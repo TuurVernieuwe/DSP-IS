@@ -84,22 +84,6 @@ elseif nargin == 10 % Session 7
     type = varargin{7};
 end
 
-%% Create a struct to store variables for TimerFcn
-    timerData.colorMap = colorMap;  % Assuming colorMap is a variable you need
-    timerData.imageData = imageData;  % Add other necessary variables
-    timerData.imageSize = imageSize;  % Add other necessary variables
-    timerData.bitsPerPixel = bitsPerPixel;  % Add other necessary variables
-
-%% Set up a timer for non-blocking visualization
-    t = timer;
-    t.StartDelay = 0;  % No initial delay
-    t.Period = 0.2;  % Periodicity of updates (same as packet duration)
-    t.ExecutionMode = 'fixedRate';  % Periodically call the update function
-    t.TimerFcn = @(~,~) visualize_demod();  % Call the visualize_demod function
-
-    % Start the timer
-    start(t);
-
 %% Perform OFDM demodulation
 if ~(nargin == 9)
     % Reshape the received OFDM sequence (serial to parallel conversion)
@@ -121,9 +105,23 @@ if ~(nargin == 9)
             QAM_matrix = QAM_matrix ./ CHANNELS(2:N/2);
         end
     elseif exist("trainblock", "var")
+        % Invert ON_
+        trainblock_ext = zeros(N/2-1, 1);
+        index = 1;
+        for i=1:N/2-1
+            if ON_OFF_mask(i)
+                trainblock_ext(i) = trainblock(index);
+                index = index + 1;
+            else
+                trainblock_ext(i) = 0;
+            end
+        end
         CHANNELS = zeros(N/2-1, 1);
-        for i=1:1:N/2-1
-            CHANNELS(i) = repmat(trainblock(i), 100, 1)\QAM_matrix(i,:).';
+        for i=1:N/2-1
+            if ON_OFF_mask(i)
+                CHANNELS(i) = repmat(trainblock(i), length(QAM_matrix(i,:).'), 1)\QAM_matrix(i,:).';
+            else
+                CHQ
         end
         QAM_matrix = QAM_matrix ./ CHANNELS;
     end
@@ -197,13 +195,8 @@ else
         % Supply streamLength number of symbols (you can ignore this until exercise 4.2)
         QAM_seq = reshape(QAM_matrix, [], 1);
         data_seq = [data_seq; QAM_seq];
-        visualize_demod()
     end
     data_seq = data_seq(1:streamLength);
-
-    % Stop and delete the timer after all processing is done
-    stop(t);
-    delete(t);
 
 
 end

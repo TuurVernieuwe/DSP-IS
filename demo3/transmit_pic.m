@@ -26,7 +26,7 @@ t = 0:1/fs:1;
 
 %% Determine bit loading
 % Channel estimation based on a dummy transmission for bitloading
-train_bits = randi([0 1], log2(M)*(N/2-1), 1); % Generate a random vector of bits
+train_bits = randi([0 1], log2(M)*sum(ON_OFF_mask), 1); % Generate a random vector of bits
 trainblock = qam_mod(train_bits, M); % QAM modulate
 
 if bitloading_flag

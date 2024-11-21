@@ -88,16 +88,16 @@ end
 if ~(nargin == 9)
     % Reshape the received OFDM sequence (serial to parallel conversion)
     OFDM_matrix = reshape(OFDM_seq, N+Lcp, []);
-    
+
     % Remove the cyclic prefix (you can ignore this until exercise 3.2.4)
     OFDM_matrix = OFDM_matrix(Lcp+1:end, :);
-    
+
     % Apply fft operation
     QAM_matrix = fft(OFDM_matrix);
-    
+
     % Remove the redundant parts of QAM_matrix
     QAM_matrix = QAM_matrix(2:size(QAM_matrix, 1)/2, :);
-    
+
     % Apply channel equalisation (you can ignore this until exercise 4.2.3)
     if exist("equalization", "var")
         if equalization
@@ -106,12 +106,16 @@ if ~(nargin == 9)
         end
     elseif exist("trainblock", "var")
         CHANNELS = zeros(N/2-1, 1);
-        for i=1:1:N/2-1
-            CHANNELS(i) = repmat(trainblock(i), length(QAM_matrix(i,:).'), 1)\QAM_matrix(i,:).';
+        index = 1;
+        for i=1:N/2-1
+            if ON_OFF_mask(i)
+                CHANNELS(i) = repmat(trainblock(index), length(QAM_matrix(i,:).'), 1)\QAM_matrix(i,:).';
+                index = index + 1;
+            end
         end
         QAM_matrix = QAM_matrix ./ CHANNELS;
     end
-    
+
     % Apply on-off mask (you can ignore this until exercise 4.3)
     QAM_matrix_big = QAM_matrix;
     bins = sum(ON_OFF_mask);
@@ -123,12 +127,10 @@ if ~(nargin == 9)
             row = row + 1;
         end
     end
-    
+
     % Supply streamLength number of symbols (you can ignore this until exercise 4.2)
     QAM_seq = reshape(QAM_matrix, [], 1);
     data_seq = QAM_seq(1:streamLength);
-
-
 else
     data_seq = [];
     for i = 1:nbPackets
@@ -157,8 +159,8 @@ else
             end
         elseif exist("trainblock", "var")
             CHANNELS = zeros(N/2-1, 1);
-            for i=1:1:N/2-1
-                CHANNELS(i) = mean(trainblocks_this_iteration(i, :) ./ trainblock(i));
+            for j=1:1:N/2-1
+                CHANNELS(j) = mean(trainblocks_this_iteration(j, :) ./ trainblock(j));
             end
             QAM_matrix = QAM_matrix ./ CHANNELS;
         end
@@ -171,9 +173,9 @@ else
         bins = sum(ON_OFF_mask);
         QAM_matrix = zeros(bins, size(QAM_matrix_big, 2));
         row = 1;
-        for i=1:length(ON_OFF_mask)
-            if ON_OFF_mask(i)
-                QAM_matrix(row, :) = QAM_matrix_big(i, :);
+        for j=1:length(ON_OFF_mask)
+            if ON_OFF_mask(j)
+                QAM_matrix(row, :) = QAM_matrix_big(j, :);
                 row = row + 1;
             end
         end
@@ -183,6 +185,4 @@ else
         data_seq = [data_seq; QAM_seq];
     end
     data_seq = data_seq(1:streamLength);
-
-
 end

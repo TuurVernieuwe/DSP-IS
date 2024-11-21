@@ -11,7 +11,7 @@ SNR = 35; % SNR of transmission [dB]
 accoustic_transmission = 0; % If 1 acoustic transmission occurs, if 0 a simulated transmission.
 t = 0:1/fs:1;
 f_sync = 5000;
-ON_OFF_mask = [ones(N/2-1, 1)];
+ON_OFF_mask = [0; 0; ones(N/2-2, 1); 0];
 
 %% Construct train block.
 train_bits = randi([0 1], log2(M)*sum(ON_OFF_mask), 1); % Generate a random vector of bits corresponding to a single OFDM frame
