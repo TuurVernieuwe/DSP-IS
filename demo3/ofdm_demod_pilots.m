@@ -19,24 +19,28 @@ function [data_seq, CHANNELS] = ofdm_demod_pilots( OFDM_seq, N, Lcp, streamLengt
 
 %% Perform OFDM demodulation
 % Reshape the received OFDM sequence (serial to parallel conversion)
-OFDM_matrix = ;
-% Remove the cyclic prefix (you can ignore this until exercise 3.2.4)
-OFDM_matrix = ;
-% Apply fft operation
-QAM_matrix = ;
-% Remove the redundant parts of QAM_matrix
-QAM_matrix = ;
+OFDM_matrix = reshape(OFDM_seq, N+Lcp, []);
 
-data_matrix = zeros(); % Placeholder for data
-CHANNELS = zeros(); % Plaecholder for channels
+% Remove the cyclic prefix (you can ignore this until exercise 3.2.4)
+OFDM_matrix = OFDM_matrix(Lcp+1:end, :);
+
+% Apply fft operation
+QAM_matrix = fft(OFDM_matrix);
+
+% Remove the redundant parts of QAM_matrix
+QAM_matrix = QAM_matrix(2:size(QAM_matrix, 1)/2, :);
+
+data_matrix = zeros(N/4-1, size(QAM_matrix, 2)); % Placeholder for data
+CHANNELS = zeros(N/4, 1); % Placeholder for channels
 
 for pIdx = 1:nbOFDMsymb % Loop across frames
     % Extract packet.
-    dataFrames = ;
+    idx = [repmat([0;1], bins, 1); 0];
+    dataFrames(:,pIdx) = QAM_matrix(logical(idx),pIdx);
         
     % Channel estimation
-    CHANNELS(:,pIdx) = ; % Save channel
-
+    CHANNELS(:,pIdx) = QAM_matrix(~logical(idx),pIdx); % Save channel
+    
     % Equalization of data frames
     data_matrix(:,pIdx) = ;
 end
