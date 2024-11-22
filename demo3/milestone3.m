@@ -1,22 +1,23 @@
 % Transmission of a picture across the channel
 %% Cleanup
 clear; close all; clc;
+rng(50)
 
 %% Parameters.
 N = 1024; % Total number of symbols in a single OFDM frame, i.e., the DFT size
-Lcp = fix(N/4); % Cyclic prefix length [samples].
-M = 16; %  constellation size.
-SNR = 15; % SNR of transmission [dB].
-Lt = 5; % Number of training frames.
+Lcp = 300; % Cyclic prefix length [samples].
+M = 8; %  constellation size.
+SNR = 10; % SNR of transmission [dB].
+Lt = 10; % Number of training frames.
 Ld = 5; % Number of data frames.
 fs = 16000; % Sampling frequency [Hz].
-channel = "simulation"; % acoustic or simulation
+channel = "acoustic"; % acoustic or simulation
 
 % Bitloading
 ON_OFF_mask = ones(N/2-1, 1); % Default all bins to one for regular transmission
 bitloading_flag = 1; % If 1 then on-off/adaptive bitloading is enabled.
 bitloading_type = "on-off"; % on-off or adaptive 
-BW_usage = 0.6; % Fraction of bins to use for on-off bitloading
+BW_usage = 0.8; % Fraction of bins to use for on-off bitloading
 Nswitch = (Lt+Ld)*(N+Lcp); % The simulated channel changes every Nswitch number of samples.
 smoothing_factor = .99; % Smoothing factor for simulated channel (see simulate_channel.m)
 
