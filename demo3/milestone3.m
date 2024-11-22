@@ -90,3 +90,5 @@ rx_bits = qam_demod(rx_qam, M, length(bitStream));
 
 %% Bit error rate
 BER = ber(bitStream, rx_bits)
+
+visualize_demod

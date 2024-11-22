@@ -127,6 +127,7 @@ if ~(nargin == 9)
 else
     bins = sum(ON_OFF_mask);
     data_seq = zeros(bins*Ld*nbPackets,1);
+    CHANNELS = zeros(N/2-1, nbPackets);
     for i = 1:nbPackets
         % Reshape the received OFDM sequence (serial to parallel conversion)
         OFDM_matrix = reshape(OFDM_seq((i-1)*(Lt+Ld)*(N+Lcp)+1:i*(Lt+Ld)*(N+Lcp)), N+Lcp, []);
@@ -145,16 +146,17 @@ else
         QAM_matrix = QAM_matrix(:, Lt+1:end);
         
         % Calculate channel frequency response
-        CHANNELS = zeros(N/2-1, 1);
+        CHANNEL = zeros(N/2-1, 1);
         width = size(QAM_matrix, 2);
         index = 1;
         for j=1:N/2-1
             if ON_OFF_mask(j)
-                CHANNELS(j) = (trainblock(index)*ones(width, 1)) \ trainpacket(j,:).';
+                CHANNEL(j) = (trainblock(index)*ones(length(trainpacket(j,:).'), 1)) \ trainpacket(j,:).';
                 index = index + 1;
             end
         end
-        QAM_matrix = QAM_matrix ./ CHANNELS;
+        QAM_matrix = QAM_matrix ./ CHANNEL;
+        CHANNELS(:, i) = CHANNEL;
         
         % Apply on-off mask (you can ignore this until exercise 4.3)
         QAM_matrix = QAM_matrix(logical(ON_OFF_mask),:);
