@@ -85,7 +85,7 @@ elseif nargin == 10 % Session 7
 end
 
 %% Perform OFDM demodulation
-if ~(nargin == 9)
+if ~(nargin == 9 || nargin == 10)
     % Reshape the received OFDM sequence (serial to parallel conversion)
     OFDM_matrix = reshape(OFDM_seq, N+Lcp, []);
 
@@ -124,7 +124,9 @@ if ~(nargin == 9)
     QAM_seq = reshape(QAM_matrix, [], 1);
     data_seq = QAM_seq(1:streamLength);
 
-else
+
+
+elseif (nargin == 9)
     bins = sum(ON_OFF_mask);
     data_seq = zeros(bins*Ld*nbPackets,1);
     CHANNELS = zeros(N/2-1, nbPackets);
@@ -147,7 +149,6 @@ else
         
         % Calculate channel frequency response
         CHANNEL = zeros(N/2-1, 1);
-        width = size(QAM_matrix, 2);
         index = 1;
         for j=1:N/2-1
             if ON_OFF_mask(j)
@@ -166,4 +167,70 @@ else
         data_seq(1+(i-1)*bins*Ld:i*bins*Ld) = QAM_seq;
     end
     data_seq = data_seq(1:streamLength);
+
+
+else
+    % Reshape the received OFDM sequence (serial to parallel conversion)
+    OFDM_matrix = reshape(OFDM_seq, N+Lcp, []);
+
+    % Remove the cyclic prefix (you can ignore this until exercise 3.2.4)
+    OFDM_matrix = OFDM_matrix(Lcp+1:end, :);
+
+    % Apply fft operation
+    QAM_matrix = fft(OFDM_matrix);
+
+    % Remove the redundant parts of QAM_matrix
+    QAM_matrix = QAM_matrix(2:size(QAM_matrix, 1)/2, :);
+
+    % Split matrix
+    trainpacket = QAM_matrix(:, 1:Lt);
+    QAM_matrix = QAM_matrix(:, Lt+1:end);
+    
+
+    CHANNELS = zeros(N/2-1, size(QAM_matrix, 2));
+    % make initial channel estimation
+    CHANNEL = zeros(N/2-1, 1);
+    index = 1;
+    for j=1:N/2-1
+        if ON_OFF_mask(j)
+            CHANNEL(j) = (trainblock(index)*ones(length(trainpacket(j,:).'), 1)) \ trainpacket(j,:).';
+            index = index + 1;
+        end
+    end
+    
+    width = size(QAM_matrix, 2);
+    nbSymbols = N/2-1;
+    for i = 1:width
+        % NMLS filter implementation.
+        % Initialise filters, reconstructed transmitted signal and error
+        rec_Xk = zeros(nbSymbols,1); 
+        Ek = zeros(nbSymbols,1);
+        CHANNELS(1, i) = (1 + 0.1)/conj(CHANNEL); 
+        for n = 1:nbSymbols-1
+            % Apply filter.
+            estXk = conj(CHANNELS(n, i))*QAM_matrix(n+1, i);
+    
+            % Reconstruct transmitted signal.
+            rec_bits = qam_demod(estXk, M, log2(M));
+            rec_Xk(n) = qam_mod(rec_bits, M);
+    
+            % Calculate error signal.
+            Ek(n) = rec_Xk(n) - estXk;
+    
+            % Update filter.
+            CHANNELS(n+1, i) = CHANNELS(n, i) + mu/(alpha + conj(QAM_matrix(n+1, i))*QAM_matrix(n+1, i)) * QAM_matrix(n+1, i) * conj(Ek(n));
+        end
+
+        % apply the equalisation with the updated values
+        QAM_matrix(:, i) = QAM_matrix(:, i) ./ CHANNELS(:, i);
+    end
+    
+    % Apply on-off mask (you can ignore this until exercise 4.3)
+    QAM_matrix = QAM_matrix(logical(ON_OFF_mask),:);
+
+    % Supply streamLength number of symbols (you can ignore this until exercise 4.2)
+    QAM_seq = reshape(QAM_matrix, [], 1);
+    data_seq = QAM_seq(1:streamLength);
+
+
 end

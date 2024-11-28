@@ -62,7 +62,7 @@ QAM_matrix_small = reshape(QAM_seq, bins, []);
 QAM_matrix = zeros(N/2-1, size(QAM_matrix_small, 2));
 QAM_matrix(logical(ON_OFF_mask), :) = QAM_matrix_small;
 
-if ~(nargin == 7)
+if ~(nargin == 7 || nargin == 6)
     % Construct the OFDM frames according to Figure 2 in session 3
     fOFDM_frame = [zeros(1, size(QAM_matrix, 2)); QAM_matrix; zeros(1, size(QAM_matrix, 2)); conj(flip(QAM_matrix))];
     
@@ -75,7 +75,9 @@ if ~(nargin == 7)
     % Serialize the set of OFDM frames
     OFDM_seq = reshape(OFDM_frame, [], 1);
 
-else
+
+
+elseif (nargin == 7)
     % Padding to make the amount of columns a multiple of Ld
     fOFDM_pad = Ld - mod(size(QAM_matrix, 2), Ld);
     if ~(Ld == fOFDM_pad)
@@ -106,4 +108,27 @@ else
     for i = 1:nbPackets
         OFDM_seq(1+len*(i-1):len*i) = [trainpacket; reshape(OFDM_frame(:, 1+Ld*(i-1):Ld*i), [], 1)];
     end
+
+
+    
+else
+        % Construct the OFDM frames according to Figure 2 in session 3
+    fOFDM_frame = [zeros(1, size(QAM_matrix, 2)); QAM_matrix; zeros(1, size(QAM_matrix, 2)); conj(flip(QAM_matrix))];
+    trainblock_ext = zeros(N/2-1, 1);
+    trainblock_ext(logical(ON_OFF_mask)) = trainblock;
+    fOFDM_frame_trainblock = [0; trainblock_ext; 0; conj(flip(trainblock_ext))];
+    
+    % Apply the inverse Fourier transform (IFFT)
+    OFDM_frame = ifft(fOFDM_frame);
+    OFDM_frame_trainblock = ifft(fOFDM_frame_trainblock);
+    
+    % Add in the cyclic prefix
+    OFDM_frame = [OFDM_frame(end-Lcp+1:end, :); OFDM_frame];
+    OFDM_frame_trainblock = [OFDM_frame_trainblock(end-Lcp+1:end, :); OFDM_frame_trainblock];
+    
+    % Construct serialized training packet
+    trainpacket = repmat(OFDM_frame_trainblock, Lt, 1);
+
+    % Construct serialized packets
+    OFDM_seq = [trainpacket; reshape(OFDM_frame, [], 1)];
 end
