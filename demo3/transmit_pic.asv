@@ -10,7 +10,7 @@ SNR = 15; % SNR of transmission [dB].
 Lt = 5; % Number of training frames.
 Ld = 5; % Number of data frames.
 fs = 16000; % Sampling frequency [Hz].
-channel = "acoustic"; % acoustic or simulation
+channel = "simulation"; % acoustic or simulation
 
 % Bitloading
 ON_OFF_mask = ones(N/2-1, 1); % Default all bins to one for regular transmission

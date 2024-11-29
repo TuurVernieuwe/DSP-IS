@@ -1,4 +1,4 @@
-t_packet = 0.1*time_estimate; % Duration of one packet [s]
+t_packet = time_estimate; % Duration of one packet [s]
 idx = 1;
 i = 1;
 while 1
@@ -6,18 +6,20 @@ while 1
         bins = sum(ON_OFF_mask);
         figure(1);
         subplot(2,2,1);
-        CHANNEL = CHANNELS(:, i);
-        i = i + 1;
+        if (mod(idx, Ld) == 1)
+            CHANNEL = CHANNELS(:, i);
+            i = i + 1;
+        end
         est_h = ifft([0; CHANNEL; 0; flip(conj(CHANNEL))]);
         plot(real(est_h()));
         xlim([0 200])
-        ylim([-1 1]); % plot the channel impulse response
+        ylim([-0.2 0.2]); % plot the channel impulse response
         title('Channel in time domain')
         
         subplot(2,2,3);
         T0 = fs/N;
         plot(T0:T0:T0*(N/2-1), pow2db(abs(CHANNEL).^2).'); % plot the channel frequency response
-        ylim([-10 20])
+        ylim([-30 10])
         xlabel('Frequency [Hz]')
         ylabel('dB')
         title('Channel in frequency domain (no DC)')
@@ -27,7 +29,7 @@ while 1
         
         subplot(2,2,4);
         
-        demoded_bitstream = rx_bits(1:idx*log2(M)*bins); % the bit stream that is received by the receiver so far
+        demoded_bitstream = rx_bits(1:log2(M)*idx*bins); % the bit stream that is received by the receiver so far
         imageRx = bitstreamtoimage(demoded_bitstream, imageSize, bitsPerPixel);
         colormap(colorMap); image(imageRx); axis image; title('Received image'); drawnow;
         drawnow;

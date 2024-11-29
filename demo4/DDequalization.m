@@ -78,7 +78,6 @@ for iN=1:length(mu) % Counter of stepsizes
         % Apply filter.
         estXk = conj(w(n))*Yk(n+1);
         % Reconstruct transmitted signal.
-        disp(n)
         rec_bits = qam_demod(estXk, M, log2(M));
         rec_Xk(n) = qam_mod(rec_bits, M);
         % Calculate error signal.

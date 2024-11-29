@@ -187,7 +187,6 @@ else
     QAM_matrix = QAM_matrix(:, Lt+1:end);
     
     Ld = size(QAM_matrix, 2);
-    CHANNELS = zeros(N/2-1, Ld);
     % Make initial channel estimation
     CHANNEL = zeros(N/2-1, 1);
     index = 1;
@@ -197,32 +196,34 @@ else
             index = index + 1;
         end
     end
-    nbQAMsymb = N/2-1;
-    for i = 1:Ld
+
+    CHANNELS = zeros(N/2-1, Ld);
+    CHANNELS(:, 1) = (1 + 0.1)./conj(CHANNEL); 
+    for i = 1:Ld-1 % Columns
         % NMLS filter implementation.
         % Initialise filters, reconstructed transmitted signal and error
-        rec_Xk = zeros(nbQAMsymb,1); 
-        Ek = zeros(nbQAMsymb,1);
-        CHANNELS(1, i) = (1 + 0.1)/conj(CHANNEL); 
-        for n = 1:nbQAMsymb-1
-            % Apply filter.
-            estXk = conj(CHANNELS(n, i))*QAM_matrix(n+1, i);
-            % Reconstruct transmitted signal.
-            rec_bits = qam_demod(estXk, M, log2(M));
-            rec_Xk(n) = qam_mod(rec_bits, M);
-            % Calculate error signal.
-            Ek(n) = rec_Xk(n) - estXk;
-            % Update filter.
-            CHANNELS(n+1, i) = CHANNELS(n, i) + mu/(alpha + conj(QAM_matrix(n+1, i))*QAM_matrix(n+1, i)) * QAM_matrix(n+1, i) * conj(Ek(n));
+        rec_Xk = zeros(N/2-1,1); 
+        Ek = zeros(N/2-1,1);
+        for n = 1:N/2-1 % Rows
+            if ON_OFF_mask(n)
+                % Apply filter.
+                estXk = CHANNELS(n, i)' * QAM_matrix(n, i+1);
+                % Reconstruct transmitted signal.
+                rec_bits = qam_demod(estXk, M, log2(M));
+                rec_Xk(n) = qam_mod(rec_bits, M);
+                % Calculate error signal.
+                Ek(n) = rec_Xk(n) - estXk;
+                % Update filter.
+                CHANNELS(n, i+1) = CHANNELS(n,i) + mu/(alpha + QAM_matrix(n,i+1)'.*QAM_matrix(n,i+1)) .* QAM_matrix(n,i+1) .* conj(Ek(n));
+            end
         end
         % apply the equalisation with the updated values
-        QAM_matrix(:, i) = QAM_matrix(:, i) ./ CHANNELS(:, i);
+        QAM_matrix(:, i) = conj(CHANNELS(:,i)).*QAM_matrix(:,i);
     end
     
     % Apply on-off mask (you can ignore this until exercise 4.3)
     QAM_matrix = QAM_matrix(logical(ON_OFF_mask),:);
 
     % Supply streamLength number of symbols (you can ignore this until exercise 4.2)
-    QAM_seq = reshape(QAM_matrix, [], 1);
-    data_seq = QAM_seq(1:streamLength);
+    data_seq = reshape(QAM_matrix, [], 1);
 end
