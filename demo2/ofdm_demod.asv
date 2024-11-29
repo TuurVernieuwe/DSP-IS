@@ -186,8 +186,7 @@ else
     trainpacket = QAM_matrix(:, 1:Lt);
     QAM_matrix = QAM_matrix(:, Lt+1:end);
     
-    Ld = size(QAM_matrix, 2);
-    CHANNELS = zeros(N/2-1, Ld);
+    CHANNELS = zeros(N/2-1, size(QAM_matrix, 2));
     % Make initial channel estimation
     CHANNEL = zeros(N/2-1, 1);
     index = 1;
@@ -197,24 +196,30 @@ else
             index = index + 1;
         end
     end
-    nbQAMsymb = N/2-1;
-    for i = 1:Ld
+    
+    width = size(QAM_matrix, 2);
+    nbSymbols = N/2-1;
+    for i = 1:width
         % NMLS filter implementation.
         % Initialise filters, reconstructed transmitted signal and error
-        rec_Xk = zeros(nbQAMsymb,1); 
-        Ek = zeros(nbQAMsymb,1);
+        rec_Xk = zeros(nbSymbols,1); 
+        Ek = zeros(nbSymbols,1);
         CHANNELS(1, i) = (1 + 0.1)/conj(CHANNEL); 
-        for n = 1:nbQAMsymb-1
+        for n = 1:nbSymbols-1
             % Apply filter.
             estXk = conj(CHANNELS(n, i))*QAM_matrix(n+1, i);
+    
             % Reconstruct transmitted signal.
             rec_bits = qam_demod(estXk, M, log2(M));
             rec_Xk(n) = qam_mod(rec_bits, M);
+    
             % Calculate error signal.
             Ek(n) = rec_Xk(n) - estXk;
+    
             % Update filter.
             CHANNELS(n+1, i) = CHANNELS(n, i) + mu/(alpha + conj(QAM_matrix(n+1, i))*QAM_matrix(n+1, i)) * QAM_matrix(n+1, i) * conj(Ek(n));
         end
+
         % apply the equalisation with the updated values
         QAM_matrix(:, i) = QAM_matrix(:, i) ./ CHANNELS(:, i);
     end
@@ -225,4 +230,6 @@ else
     % Supply streamLength number of symbols (you can ignore this until exercise 4.2)
     QAM_seq = reshape(QAM_matrix, [], 1);
     data_seq = QAM_seq(1:streamLength);
+
+
 end

@@ -56,7 +56,7 @@ if bitloading_flag
         ON_OFF_mask = abs(CHANNELS) >= threshold; % ON-OFF mask with 1 denoting the usage of a bin.
         trainblock = trainblock(logical(ON_OFF_mask));
     elseif bitloading_type == "adaptive"
-        M = 0;     % Constellation sizes
+        M = 0; % Constellation sizes
     end
 end
 
