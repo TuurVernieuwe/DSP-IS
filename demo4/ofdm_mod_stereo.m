@@ -42,8 +42,10 @@ if Equalization == "fixed"
         % Apply factors
         if i == 1
             QAM_matrix = a.*QAM_matrix_raw;
+            trainblock = a.*trainblock;
         else
             QAM_matrix = b.*QAM_matrix_raw;
+            trainblock = b.*trainblock;
         end
         
         % Construct the OFDM frames according to Figure 2 in session 3

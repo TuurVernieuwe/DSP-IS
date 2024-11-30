@@ -24,7 +24,6 @@ function [ data_seq, CHANNELS] = ofdm_demod_stereo( OFDM_seq, N, Lcp, trainblock
 % data_seq      T3X1            QAM sequence of T3 symbols.
 % CHANNELS      N/2-1XP         Frequency domain estimated combined channel for each 1..P.
 
-<<<<<<< HEAD
 %% Perform OFDM demodulation
 if Equalization == "fixed"
     % Reshape the received OFDM sequence (serial to parallel conversion)
@@ -45,10 +44,11 @@ if Equalization == "fixed"
     
     % Calculate channel frequency response
     CHANNELS = zeros(N/2-1, 1);
-    index = 1;
     for j=1:N/2-1
         CHANNELS(j) = (trainblock(j)*ones(length(trainpacket(j,:).'), 1)) \ trainpacket(j,:).';
     end
+    figure
+    plot(abs(CHANNELS));
     QAM_matrix = QAM_matrix ./ CHANNELS;
     
     % Supply streamLength number of symbols (you can ignore this until exercise 4.2)

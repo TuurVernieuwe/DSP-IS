@@ -7,7 +7,7 @@ Lh = 200; % Length of impulse response
 N = 1024; % Total number of symbols in a single OFDM frame, i.e., the DFT size
 M = 16; % QAM constellation size.
 Lcp = Lh; % Cyclic prefix length [samples].
-Lt = 5; % Number of training frames
+Lt = 10; % Number of training frames
 Ld = 5; % Number of data frames
 Equalization = "fixed"; % Equalization mode (see ofdm_demod_stereo.m)
 mu = 0.2;% NLMS stepsize
@@ -15,9 +15,10 @@ alpha = 1; % NLMS regularization
 SNR = 30; % SNR of transmission 
 
 %% Generate two random impulse responses, and calculate frequency response.
-load('channel_session6.mat')
-h1 = h; load('channel_session7.mat'); h2 = h; % Impulse responses
-H = [fft(h1, N) fft(h2, N)]; % N/2-1X2 matrix containing frequency transform of h1 and h2
+load('channel_session7.mat')
+h1 = h; h2 = h + randi([-1 1], length(h), 1); % Impulse responses
+H = [fft(h1, N) fft(h2, N)];
+H = H(1:N/2-1,:); % N/2-1X2 matrix containing frequency transform of h1 and h2
 
 %% Construct QAM symbol stream.
 [bitStream, imageData, colorMap, imageSize, bitsPerPixel] = imagetobitstream('image.bmp');
@@ -35,7 +36,7 @@ Rx = fftfilt(h1, Tx(:,1)) + fftfilt(h2, Tx(:,2));
 %Rx = awgn(Rx, SNR, "measured");
 
 %% OFDM demodulation.
-[rec_qamStream, CHANNELS] = ofdm_demod_stereo(Rx, N, Lcp, trainblock, Lt, Ld, M, nbPackets, Equalization, mu, alpha);
+[rec_qamStream, CHANNELS] = ofdm_demod_stereo(Rx, N, Lcp, train_frame, Lt, Ld, M, nbPackets, Equalization, mu, alpha);
 
 %% QAM demodulation.
 rx_bits = qam_demod(rec_qamStream, M, length(bitStream));
