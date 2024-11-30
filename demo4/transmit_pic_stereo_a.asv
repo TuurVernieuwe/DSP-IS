@@ -24,7 +24,7 @@ H = [fft(h1, N).' fft(h2, N).']; % N/2-1X2 matrix containing frequency transform
 qamStream = qam_mod(bitStream, M);
 
 % Construct train block.
-train_bits = randi([0 1], log2(M)*(N/2-1), 1);
+train_bits = randi([0 1], log2(M)*(N/2-1),1);
 train_frame = qam_mod(train_bits, M);
 
 %% OFDM modulation.

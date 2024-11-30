@@ -11,7 +11,7 @@ SNR = 35; % SNR of transmission [dB]
 accoustic_transmission = 0; % If 1 acoustic transmission occurs, if 0 a simulated transmission.
 t = 0:1/fs:1;
 f_sync = 5000;
-ON_OFF_mask = [zeros(20,1); ones(N/2-21, 1)];
+ON_OFF_mask = [ones(N/2-1, 1)];
 
 %% Construct train block.
 train_bits = randi([0 1], log2(M)*sum(ON_OFF_mask), 1); % Generate a random vector of bits corresponding to a single OFDM frame
@@ -38,10 +38,10 @@ end
 [qam_stream, CHANNELS] = ofdm_demod(aligned_Rx, N, Lcp, length(train_stream), ON_OFF_mask, train_block);
 
 %% QAM Demodulate
-rx_bits = qam_demod(qam_stream, M, length(train_bits));
+rx_bits = qam_demod(qam_stream, M, 100*length(train_bits));
 
 %% BER
-BER = ber(train_bits, rx_bits)
+BER = ber(repmat(train_bits, 100, 1), rx_bits)
 
 %% Plot (real and) estimated channel.
 if ~accoustic_transmission

@@ -58,8 +58,15 @@ if Equalization == "fixed"
         OFDM_frame = [OFDM_frame(end-Lcp+1:end, :); OFDM_frame];
         OFDM_frame_trainblock = [OFDM_frame_trainblock(end-Lcp+1:end, :); OFDM_frame_trainblock];
         
-        % Construct OFDM sequence
-        OFDM_seq(:,i) = [repmat(OFDM_frame_trainblock, Lt, 1); reshape(OFDM_frame, [],1);];
+        % Construct serialized training packet
+        trainpacket = repmat(OFDM_frame_trainblock, Lt, 1);
+        
+        % Construct serialized packets
+        len = size(OFDM_frame, 1)*(Lt+Ld); % Number of elements in one packet
+        OFDM_seq = zeros(len*nbPackets, 2);
+        for j = 1:nbPackets
+            OFDM_seq(1+len*(j-1):len*j,i) = [trainpacket; reshape(OFDM_frame(:, 1+Ld*(j-1):Ld*j), [], 1)];
+        end
     end
 end
 end

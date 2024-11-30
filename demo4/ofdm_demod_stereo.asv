@@ -27,6 +27,10 @@ function [ data_seq, CHANNELS] = ofdm_demod_stereo( OFDM_seq, N, Lcp, trainblock
 % CHANNELS      N/2-1XP         Frequency domain estimated combined channel for each 1..P.
 
 if Equalization == "fixed"
+    bins = N/2-1;
+    data_seq = zeros(bins*Ld,1);
+    CHANNELS = zeros(N/2-1, 1);
+
     % Reshape the received OFDM sequence (serial to parallel conversion)
     OFDM_matrix = reshape(OFDM_seq, N+Lcp, []);
     
@@ -44,19 +48,22 @@ if Equalization == "fixed"
     QAM_matrix = QAM_matrix(:, Lt+1:end);
     
     % Calculate channel frequency response
-    CHANNELS = zeros(N/2-1, 1);
+    CHANNEL = zeros(N/2-1, 1);
     index = 1;
     for j=1:N/2-1
         if ON_OFF_mask(j)
-            CHANNELS(j) = (trainblock(index)*ones(length(trainpacket(j,:).'), 1)) \ trainpacket(j,:).';
+            CHANNEL(j) = (trainblock(index)*ones(length(trainpacket(j,:).'), 1)) \ trainpacket(j,:).';
             index = index + 1;
         end
     end
-    QAM_matrix = QAM_matrix ./ CHANNELS;
+    QAM_matrix = QAM_matrix ./ CHANNEL;
+    CHANNELS = CHANNEL;
     
     % Supply streamLength number of symbols (you can ignore this until exercise 4.2)
     QAM_seq = reshape(QAM_matrix, [], 1);
-    data_seq = QAM_seq(1:streamLength);
+    data_seq(1+(i-1)*bins*Ld:i*bins*Ld) = QAM_seq;
+
+    data_seq = data_seq(1:streamLength);
 end
 end
 
