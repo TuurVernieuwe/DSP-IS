@@ -17,14 +17,14 @@ SNR = 30; % SNR of transmission
 %% Generate two random impulse responses, and calculate frequency response.
 load('channel_session6.mat')
 h1 = h; load('channel_session7.mat'); h2 = h; % Impulse responses
-H = [fft(h1, N).' fft(h2, N).']; % N/2-1X2 matrix containing frequency transform of h1 and h2
+H = [fft(h1, N) fft(h2, N)]; % N/2-1X2 matrix containing frequency transform of h1 and h2
 
 %% Construct QAM symbol stream.
 [bitStream, imageData, colorMap, imageSize, bitsPerPixel] = imagetobitstream('image.bmp');
 qamStream = qam_mod(bitStream, M);
 
 % Construct train block.
-train_bits = randi([0 1], log2(M)*(N/2-1),1);
+train_bits = randi([0 1], log2(M)*(N/2-1), 1);
 train_frame = qam_mod(train_bits, M);
 
 %% OFDM modulation.
@@ -41,4 +41,8 @@ Rx = fftfilt(h1, Tx(:,1)) + fftfilt(h2, Tx(:,2));
 rx_bits = qam_demod(rec_qamStream, M, length(bitStream));
 
 %% Calculate BER
+<<<<<<< HEAD
 BER = ber(train_bits, rx_bits)
+=======
+BER = ber(bitStream, rx_bits)
+>>>>>>> 7d47642e9a6eb30de442b23358d7bda8c38974a2

@@ -17,7 +17,7 @@ SNR = 30; % SNR of transmission
 %% Generate two random impulse responses, and calculate frequency response.
 load('channel_session6.mat')
 h1 = h; load('channel_session7.mat'); h2 = h; % Impulse responses
-H = [fft(h1, N).' fft(h2, N).']; % N/2-1X2 matrix containing frequency transform of h1 and h2
+H = [fft(h1, N) fft(h2, N)]; % N/2-1X2 matrix containing frequency transform of h1 and h2
 
 %% Construct QAM symbol stream.
 [bitStream, imageData, colorMap, imageSize, bitsPerPixel] = imagetobitstream('image.bmp');
@@ -41,4 +41,4 @@ Rx = fftfilt(h1, Tx(:,1)) + fftfilt(h2, Tx(:,2));
 rx_bits = qam_demod(rec_qamStream, M, length(bitStream));
 
 %% Calculate BER
-BER = ber(train_bits, rx_bits)
+BER = ber(bitStream, rx_bits)

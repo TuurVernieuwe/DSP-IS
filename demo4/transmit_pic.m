@@ -6,12 +6,12 @@ clear; close all; clc;
 % Exercise session 7: DMT-OFDM transmission with DD LMS channel tracking.
 N = 1024; % Total number of symbols in a single OFDM frame, i.e., the DFT size
 Lcp = 300;%fix(N/4); % Cyclic prefix length [samples].
-M = 4; % QAM constellation size.
+M = 16; % QAM constellation size.
 SNR = 20; % SNR of transmission [dB].
 Lt = 10; % Number of training frames.
 fs = 16000; % Sampling frequency [Hz].
-channel = 'acoustic'; % simulation or acoustic
-mu = 0.2; % NLMS stepsize
+channel = 'simulation'; % simulation or acoustic
+mu = 0.5; % NLMS stepsize
 alpha = 1; % NLMS regularization
 Nswitch = (Lt)*(N+Lcp); % The simulated channel changes every Nswitch number of samples.
 smoothing_factor = .99; % Smoothing factor for simulated channel (see simulate_channel.m)
@@ -19,7 +19,7 @@ smoothing_factor = .99; % Smoothing factor for simulated channel (see simulate_c
 % bitloading
 ON_OFF_mask = ones(N/2-1, 1); % Default all bins to one for regular transmission
 BW_usage = 0.8; % Fraction of bins to use for on-off bitloading
-bitloading_flag = 0; % If 1 then on-off bitloading is enabled.
+bitloading_flag = 1; % If 1 then on-off bitloading is enabled.
 
 % Acoustic
 f_sync = 5000;
@@ -89,3 +89,5 @@ rx_bits = qam_demod(rx_qam, M, length(bitStream));
 
 %% Bit error rate
 BER = ber(bitStream, rx_bits)
+
+visualize_demod
