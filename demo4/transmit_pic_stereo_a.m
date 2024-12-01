@@ -16,7 +16,7 @@ SNR = 30; % SNR of transmission
 
 %% Generate two random impulse responses, and calculate frequency response.
 load('channel_session7.mat')
-h1 = h; h2 = h + randi([-1 1], length(h), 1); % Impulse responses
+h1 = h(1:Lh); h2 = h(1:Lh) + randi([-1 1], Lh, 1); % Impulse responses
 H = [fft(h1, N) fft(h2, N)];
 H = H(1:N/2-1,:); % N/2-1X2 matrix containing frequency transform of h1 and h2
 

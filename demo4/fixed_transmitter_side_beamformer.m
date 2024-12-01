@@ -11,7 +11,7 @@ function [a, b] = fixed_transmitter_side_beamformer(H1, H2)
 
 denom = sqrt(H1.*conj(H1) + H2.*conj(H2));
 a = conj(H1)./denom; b = conj(H2)./denom;
-H1.*a + H2.*b
+
 % Plot
 figure;
 plot([abs(H1), abs(H2), abs(denom)])

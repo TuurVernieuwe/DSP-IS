@@ -47,8 +47,6 @@ if Equalization == "fixed"
     for j=1:N/2-1
         CHANNELS(j) = (trainblock(j)*ones(length(trainpacket(j,:).'), 1)) \ trainpacket(j,:).';
     end
-    figure
-    plot(abs(CHANNELS));
     QAM_matrix = QAM_matrix ./ CHANNELS;
     
     % Supply streamLength number of symbols (you can ignore this until exercise 4.2)

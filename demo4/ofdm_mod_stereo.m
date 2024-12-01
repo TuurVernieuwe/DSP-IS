@@ -37,8 +37,9 @@ nbPackets = 1;
 
 % Calculate per-bin factors
 [a, b] = fixed_transmitter_side_beamformer(H(:,1), H(:,2));
-trainblock_raw = trainblock;
+
 if Equalization == "fixed"
+    trainblock_raw = trainblock;
     for i = 1:2
         % Apply factors
         if i == 1
