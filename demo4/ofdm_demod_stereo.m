@@ -92,7 +92,8 @@ elseif Equalization == "packet"
         % Supply streamLength number of symbols (you can ignore this until exercise 4.2)
         QAM_seq = reshape(QAM_matrix, [], 1);
         data_seq(1+(i-1)*bins*Ld:i*bins*Ld) = QAM_seq;
+    end
 end
-data_seq = data_seq(1:streamLength);
+%data_seq = data_seq(1:streamLength);
 end
 

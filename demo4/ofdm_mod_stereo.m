@@ -37,15 +37,16 @@ nbPackets = 1;
 
 % Calculate per-bin factors
 [a, b] = fixed_transmitter_side_beamformer(H(:,1), H(:,2));
+trainblock_raw = trainblock;
 if Equalization == "fixed"
     for i = 1:2
         % Apply factors
         if i == 1
             QAM_matrix = a.*QAM_matrix_raw;
-            trainblock = a.*trainblock;
+            trainblock = a.*trainblock_raw;
         else
             QAM_matrix = b.*QAM_matrix_raw;
-            trainblock = b.*trainblock;
+            trainblock = b.*trainblock_raw;
         end
         
         % Construct the OFDM frames according to Figure 2 in session 3
