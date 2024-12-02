@@ -21,18 +21,18 @@ OFDM_matrix = OFDM_matrix(Lcp+1:end, :);
 QAM_matrix = fft(OFDM_matrix);
 
 % Remove the redundant parts of QAM_matrix
-QAM_matrix1 = QAM_matrix(2:size(QAM_matrix, 1)/2, 1:Lt);
-QAM_matrix2 = QAM_matrix(2:size(QAM_matrix, 1)/2, Lt+1:end);
+QAM_matrix1 = QAM_matrix(2:size(QAM_matrix, 1)/2, 1:end/2);
+QAM_matrix2 = QAM_matrix(2:size(QAM_matrix, 1)/2, end/2+1:end);
 
 % Channel estimation
-CHANNELS1 = zeros(N/2-1, 1);
-CHANNELS2 = zeros(N/2-1, 1);
+CHANNELS1 = ;
+CHANNELS2 = ;
 for n = 1:N/2-1
-    CHANNELS1(n) = (trainblock(n)*ones(Lt, 1)) \ QAM_matrix1(n,:).';
-    CHANNELS2(n) = (trainblock(n)*ones(Lt, 1)) \ QAM_matrix2(n,:).';
+    CHANNELS1(n) = zeros(N/2-1, 1);
+    CHANNELS2(n) = zeros(N/2-1, 1);
 end
 
 % Concatenate CHANNELS1 and CHANNELS2
-CHANNELS = [CHANNELS1; CHANNELS2];
+CHANNELS = ;
 end
 

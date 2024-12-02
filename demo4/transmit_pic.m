@@ -14,7 +14,7 @@ channel = 'simulation'; % simulation or acoustic
 mu = 0.5; % NLMS stepsize
 alpha = 1; % NLMS regularization
 Nswitch = (Lt)*(N+Lcp); % The simulated channel changes every Nswitch number of samples.
-smoothing_factor = .99; % Smoothing factor for simulated channel (see simulate_channel.m)
+smoothing_factor = 0.99; % Smoothing factor for simulated channel (see simulate_channel.m)
 
 % bitloading
 ON_OFF_mask = ones(N/2-1, 1); % Default all bins to one for regular transmission
@@ -29,17 +29,16 @@ t = 0:1/fs:1;
 % Channel estimation.
 % Construct train block.
 train_bits = randi([0 1], log2(M)*sum(ON_OFF_mask), 1); % Generate a random vector of bits
-trainblock = qam_mod(train_bits, M); % QAM modulate 
+trainblock = qam_mod(repmat(train_bits, Lt, 1), M); % QAM modulate 
 
 if bitloading_flag
     % sending only trainblock through the channel to estimate channel    
-    trainStream = ofdm_mod(repmat(trainblock, 10, 1), N, Lcp, ON_OFF_mask);
-
+    trainStream = ofdm_mod(trainblock, N, Lcp, ON_OFF_mask);
     if channel == "simulation"
         aligned_Rx = simulate_channel(trainStream, Nswitch,'channel_session7.mat',smoothing_factor); 
         aligned_Rx = awgn(aligned_Rx,SNR,'measured');
     else
-        [simin, nbsecs, fs] = initparams(trainStream, fs, sin(2*pi*t*f_sync)');
+        [simin, nbsecs, fs] = initparams(trainStream, fs);
         sim('recplay');
         Rx = simout.signals.values(:,1);
         aligned_Rx = alignIO(Rx, fs);
@@ -70,7 +69,7 @@ if channel == "simulation"
     aligned_Rx = simulate_channel(Tx, Nswitch,'channel_session7.mat',smoothing_factor);
     aligned_Rx = awgn(aligned_Rx,SNR,'measured');
 elseif channel == "acoustic"
-    [simin,nbsecs,fs] = initparams(Tx, fs, sin(2*pi*t*f_sync)');
+    [simin, nbsecs, fs] = initparams(Tx, fs, sin(2*pi*f_sync*t)');
     sim('recplay');
     Rx = simout.signals.values(:,1);
     aligned_Rx = alignIO(Rx, fs);
@@ -89,5 +88,3 @@ rx_bits = qam_demod(rx_qam, M, length(bitStream));
 
 %% Bit error rate
 BER = ber(bitStream, rx_bits)
-
-visualize_demod

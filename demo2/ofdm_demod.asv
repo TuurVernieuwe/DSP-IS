@@ -202,18 +202,18 @@ else % nargin = 10
         for n = 1:N/2-1 % Rows
             if ON_OFF_mask(n)
                 % Apply filter.
-                estXk = W(n)' * QAM_matrix(n, i+1);
+                estXk = W(n, i)' * QAM_matrix(n, i+1);
                 % Reconstruct transmitted signal.
                 rec_bits = qam_demod(estXk, M, log2(M));
                 rec_Xk(n) = qam_mod(rec_bits, M);
                 % Calculate error signal.
                 Ek(n) = rec_Xk(n) - estXk;
                 % Update filter.
-                W(n) = W(n) + mu/(alpha + QAM_matrix(n,i+1)'.*QAM_matrix(n,i+1)) .* QAM_matrix(n,i+1) .* conj(Ek(n));
+                W(n, i+1) = W(n,i) + mu/(alpha + QAM_matrix(n,i+1)'.*QAM_matrix(n,i+1)) .* QAM_matrix(n,i+1) .* conj(Ek(n));
             end
         end
         % Apply equalisation with the updated values
-        QAM_matrix(:, i) = conj(W).*QAM_matrix(:,i);
+        QAM_matrix(:, i) = conj(W(:,i)).*QAM_matrix(:,i);
     end
     CHANNELS = 1./conj(W);
 

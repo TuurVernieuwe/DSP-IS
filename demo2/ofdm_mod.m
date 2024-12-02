@@ -62,7 +62,7 @@ QAM_matrix_small = reshape(QAM_seq, bins, []);
 QAM_matrix = zeros(N/2-1, size(QAM_matrix_small, 2));
 QAM_matrix(logical(ON_OFF_mask), :) = QAM_matrix_small;
 
-if ~(nargin == 7 || nargin == 6)
+if nargin == 4
     % Construct the OFDM frames according to Figure 2 in session 3
     fOFDM_frame = [zeros(1, size(QAM_matrix, 2)); QAM_matrix; zeros(1, size(QAM_matrix, 2)); conj(flip(QAM_matrix))];
     
@@ -74,7 +74,7 @@ if ~(nargin == 7 || nargin == 6)
     
     % Serialize the set of OFDM frames
     OFDM_seq = reshape(OFDM_frame, [], 1);
-elseif (nargin == 7)
+elseif nargin == 7
     % Padding to make the amount of columns a multiple of Ld
     fOFDM_pad = Ld - mod(size(QAM_matrix, 2), Ld);
     if ~(Ld == fOFDM_pad)
@@ -105,7 +105,7 @@ elseif (nargin == 7)
     for i = 1:nbPackets
         OFDM_seq(1+len*(i-1):len*i) = [trainpacket; reshape(OFDM_frame(:, 1+Ld*(i-1):Ld*i), [], 1)];
     end
-else
+else % nargin == 6
     % Construct the OFDM frames according to Figure 2 in session 3
     fOFDM_frame = [zeros(1, size(QAM_matrix, 2)); QAM_matrix; zeros(1, size(QAM_matrix, 2)); conj(flip(QAM_matrix))];
     trainblock_ext = zeros(N/2-1, 1);

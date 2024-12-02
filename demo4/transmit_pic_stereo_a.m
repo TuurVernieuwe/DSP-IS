@@ -7,12 +7,12 @@ Lh = 200; % Length of impulse response
 N = 1024; % Total number of symbols in a single OFDM frame, i.e., the DFT size
 M = 16; % QAM constellation size.
 Lcp = Lh; % Cyclic prefix length [samples].
-Lt = 10; % Number of training frames
+Lt = 5; % Number of training frames
 Ld = 5; % Number of data frames
 Equalization = "fixed"; % Equalization mode (see ofdm_demod_stereo.m)
 mu = 0.2;% NLMS stepsize
 alpha = 1; % NLMS regularization
-SNR = 30; % SNR of transmission 
+SNR = 20; % SNR of transmission 
 
 %% Generate two random impulse responses, and calculate frequency response.
 load('channel_session7.mat')
@@ -33,7 +33,7 @@ train_frame = qam_mod(train_bits, M);
 
 %% Transmit symbol.
 Rx = fftfilt(h1, Tx(:,1)) + fftfilt(h2, Tx(:,2));
-%Rx = awgn(Rx, SNR, "measured");
+Rx = awgn(Rx, SNR, "measured");
 
 %% OFDM demodulation.
 [rec_qamStream, CHANNELS] = ofdm_demod_stereo(Rx, N, Lcp, train_frame, Lt, Ld, M, nbPackets, Equalization, mu, alpha);

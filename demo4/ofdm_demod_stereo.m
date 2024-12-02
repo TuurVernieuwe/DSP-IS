@@ -5,7 +5,7 @@ function [ data_seq, CHANNELS] = ofdm_demod_stereo( OFDM_seq, N, Lcp, trainblock
 % OFDM_seq      T1X1            Time domain OFDM sequence of length T samples.
 % N             1X1             Total number of symbols in a single OFDM frame.
 % Lcp           1X1             Cyclic prefix length [samples].
-% trainblock    T2X1            Training block of T2 QAM symbols 
+% trainblock    T2X1            Training block of T2 QAM symbols
 % M             1X1             QAM-ary constellation size
 % Lt            1X1             Number of training frames
 % Ld            1X1             Number of data frames
@@ -52,7 +52,7 @@ if Equalization == "fixed"
     % Supply streamLength number of symbols (you can ignore this until exercise 4.2)
     data_seq = reshape(QAM_matrix, [], 1);
 elseif Equalization == "packet"
-    bins = sum(ON_OFF_mask);
+    bins = N/2-1;
     data_seq = zeros(bins*Ld*nbPackets,1);
     CHANNELS = zeros(N/2-1, nbPackets);
     for i = 1:nbPackets
@@ -72,26 +72,42 @@ elseif Equalization == "packet"
         trainpacket = QAM_matrix(:, 1:Lt);
         QAM_matrix = QAM_matrix(:, Lt+1:end);
         
-        % Calculate channel frequency response
+        % Estimate channel frequency response
+        % Make initial channel estimation based on training frames
         CHANNEL = zeros(N/2-1, 1);
-        index = 1;
         for j=1:N/2-1
-            if ON_OFF_mask(j)
-                CHANNEL(j) = (trainblock(index)*ones(length(trainpacket(j,:).'), 1)) \ trainpacket(j,:).';
-                index = index + 1;
-            end
+            CHANNEL(j) = (trainblock(j)*ones(length(trainpacket(j,:).'), 1)) \ trainpacket(j,:).';
         end
-        QAM_matrix = QAM_matrix ./ CHANNEL;
-        CHANNELS(:, i) = CHANNEL;
         
-        % Apply on-off mask (you can ignore this until exercise 4.3)
-        QAM_matrix = QAM_matrix(logical(ON_OFF_mask),:);
+        Ld = size(QAM_matrix, 2);
+        W = zeros(N/2-1, Ld);
+        W(:, 1) = (1 + 0.1)./conj(CHANNEL); 
+        for i = 1:Ld-1 % Columns
+            % NMLS filter implementation.
+            % Initialise filters, reconstructed transmitted signal and error
+            rec_Xk = zeros(N/2-1,1); 
+            Ek = zeros(N/2-1,1);
+            for n = 1:N/2-1 % Rows
+                if ON_OFF_mask(n)
+                    % Apply filter.
+                    estXk = W(n, i)' * QAM_matrix(n, i+1);
+                    % Reconstruct transmitted signal.
+                    rec_bits = qam_demod(estXk, M, log2(M));
+                    rec_Xk(n) = qam_mod(rec_bits, M);
+                    % Calculate error signal.
+                    Ek(n) = rec_Xk(n) - estXk;
+                    % Update filter.
+                    W(n, i+1) = W(n,i) + mu/(alpha + QAM_matrix(n,i+1)'.*QAM_matrix(n,i+1)) .* QAM_matrix(n,i+1) .* conj(Ek(n));
+                end
+            end
+            % Apply equalisation with the updated values
+            QAM_matrix(:, i) = conj(W(:,i)).*QAM_matrix(:,i);
+        end
+        CHANNELS = 1./conj(W);
         
         % Supply streamLength number of symbols (you can ignore this until exercise 4.2)
         QAM_seq = reshape(QAM_matrix, [], 1);
         data_seq(1+(i-1)*bins*Ld:i*bins*Ld) = QAM_seq;
     end
 end
-%data_seq = data_seq(1:streamLength);
 end
-
