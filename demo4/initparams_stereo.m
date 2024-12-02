@@ -14,11 +14,11 @@ function [ simin,nbsecs,fs ] = initparams_stereo( toplay, fs )
 %% Add a synchronisation pulse
 f_sync = 5000;
 t = 0:1/fs:1;
-sync_pulse = sin(2*pi*f_sync*t); 
+sync_pulse = sin(2*pi*f_sync*t)'; 
 
 % Append the synchronisation pulse and zeros at least equal to the length
 % of the IR before toplay and Insert 2s of silence at the beginning of toplay and 1s of silcence at the end of toplay
-toplay = [zeros(2*fs, 2); sync_pulse; zeros(fs/10, 2); toplay; zeros(fs, 2)];
+toplay = [zeros(2*fs, 2); sync_pulse, sync_pulse; zeros(fs/10, 2); toplay; zeros(fs, 2)];
 
 % Scale toplay to be between [-1,1] 
 toplay = rescale(toplay, -1, 1);

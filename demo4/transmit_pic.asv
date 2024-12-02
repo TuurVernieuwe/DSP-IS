@@ -14,12 +14,12 @@ channel = 'simulation'; % simulation or acoustic
 mu = 0.5; % NLMS stepsize
 alpha = 1; % NLMS regularization
 Nswitch = (Lt)*(N+Lcp); % The simulated channel changes every Nswitch number of samples.
-smoothing_factor = 0.99; % Smoothing factor for simulated channel (see simulate_channel.m)
+smoothing_factor = 1; % Smoothing factor for simulated channel (see simulate_channel.m)
 
 % bitloading
 ON_OFF_mask = ones(N/2-1, 1); % Default all bins to one for regular transmission
 BW_usage = 0.8; % Fraction of bins to use for on-off bitloading
-bitloading_flag = 0.99; % If 1 then on-off bitloading is enabled.
+bitloading_flag = 1; % If 1 then on-off bitloading is enabled.
 
 % Acoustic
 f_sync = 5000;
@@ -29,14 +29,16 @@ t = 0:1/fs:1;
 % Channel estimation.
 % Construct train block.
 train_bits = randi([0 1], log2(M)*sum(ON_OFF_mask), 1); % Generate a random vector of bits
-trainblock = qam_mod(train_bits, M); % QAM modulate 
+trainblock = qam_mod(repmat(train_bits, Lt, 1), M); % QAM modulate 
 
 if bitloading_flag
     % sending only trainblock through the channel to estimate channel    
-    trainStream = ofdm_mod(repmat(trainblock, Lt, 1), N, Lcp, ON_OFF_mask);
+    trainStream = ofdm_mod(trainblock, N, Lcp, ON_OFF_mask);
     if channel == "simulation"
+        load('channel_session7.mat')
+        aligned_Rx = fftfilt(h, trainStream);
         aligned_Rx = simulate_channel(trainStream, Nswitch,'channel_session7.mat',smoothing_factor); 
-        aligned_Rx = awgn(aligned_Rx,SNR,'measured');
+        %aligned_Rx = awgn(aligned_Rx,SNR,'measured');
     else
         [simin, nbsecs, fs] = initparams(trainStream, fs);
         sim('recplay');
@@ -66,8 +68,10 @@ Tx = ofdm_mod(qamStream, N, Lcp, Lt, trainblock, ON_OFF_mask);
 
 %% Transmit OFDM sequence.
 if channel == "simulation"
-    aligned_Rx = simulate_channel(Tx, Nswitch,'channel_session7.mat',smoothing_factor);
-    aligned_Rx = awgn(aligned_Rx,SNR,'measured');
+    load('channel_session7.mat')
+    aligned_Rx = fftfilt(h, Tx);
+    %aligned_Rx = simulate_channel(Tx, Nswitch,'channel_session7.mat',smoothing_factor);
+    %aligned_Rx = awgn(aligned_Rx,SNR,'measured');
 elseif channel == "acoustic"
     [simin, nbsecs, fs] = initparams(Tx, fs, sin(2*pi*f_sync*t)');
     sim('recplay');
@@ -81,7 +85,7 @@ tic
 [rx_qam, CHANNELS] = ofdm_demod(aligned_Rx, N, Lcp, Lt, M, trainblock, ON_OFF_mask, mu, alpha, 'NLMS');
 time = toc;
 time_estimate = time/size(CHANNELS, 2);
-rx_qam = rx_qam(1:length(qamStream));
+%rx_qam = rx_qam(1:length(qamStream));
 
 %% QAM demodulation.
 rx_bits = qam_demod(rx_qam, M, length(bitStream));

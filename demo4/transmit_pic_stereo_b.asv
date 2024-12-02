@@ -18,22 +18,23 @@ smoothing_factor = .99; % Smoothing factor for simulated channel (see simulate_c
 %% Initial channel estimation.
 % Construct train block.
 train_bits = randi([0 1], log2(M)*(N/2-1), 1);
-train_frame = qam_mod(repmat(train_bits, Lt, 1), M);
-
-% Construct training sequence for transmitter side channel estimation.
-ofdm_train_seq = ofdm_mod(train_frame, N, Lcp, ones(N/2-1,1));
+train_frame = qam_mod(train_bits, M);
 
 % Initial channel estimation.
-ofdm_train_seq_stereo = ofdm_channel_est(ofdm_train_seq, N, Lcp, train_frame, Lt);
+ofdm_train_seq = ofdm_mod(repmat(train_frame, Lt, 1), N, Lcp, ones(N/2-1,1));
+
+% Construct training sequence for transmitter side channel estimation.
+ofdm_train_seq_stereo = [ofdm_train_seq, ofdm_train_seq];
 
 %% Transmit OFDM sequence.
 if channel == "simulation"
-    [simin, nbsecs, fs] = initparams_stereo(ofdm_train_seq, fs);
+    [simin, nbsecs, fs] = initparams_stereo(ofdm_train_seq_stereo, fs);
     Rx = simulate_channel_stereo(simin, Nswitch,'channel_stereo_session7.mat',smoothing_factor);
     Rx = awgn(Rx,SNR,'measured');
     aligned_Rx = alignIO(Rx, fs);
+    aligned_Rx = aligned_Rx(1:2*length(ofdm_train_seq));
 elseif channel == "acoustic"
-    [simin, nbsecs, fs] = initparams_stereo(ofdm_train_seq, fs);
+    [simin, nbsecs, fs] = initparams_stereo(ofdm_train_seq_stereo, fs);
     sim('recplay_stereo');
     Rx = simout.signals.values(:,1);
     aligned_Rx = alignIO(Rx, fs);
@@ -41,19 +42,19 @@ elseif channel == "acoustic"
 end
 
 %% Ofdm channel estimation.
-CHANNELS = ofdm_train_seq_stereo; % Frequency domain channels
+CHANNELS = ofdm_channel_est(aligned_Rx, N, Lcp, train_frame, Lt); % Frequency domain channels
 channels = ifft(CHANNELS); % Time domain channels
 
 % Plot channel estimations.
 figure(1);
 subplot(2,1,1);
-plot(channels);
+plot(abs(channels));
 xlabel('Samples')
 ylabel('Magnitude [arb.]')   
 title('Impulse response.');
 legend('left','right');
 subplot(2,1,2);
-plot(CHANNELS);
+plot(abs(CHANNELS));
 title('Frequency response.');
 xlabel('Samples')
 ylabel('Magnitude [dB]')   
@@ -65,7 +66,7 @@ legend('left','right');
 qamStream = qam_mod(bitStream, M);
 
 % OFDM modulation.
-[Tx, a, b, nbPackets] = ofdm_mod_stereo(qamStream, N, Lcp, CHANNELS(2:N/2,:), Lt, Ld, train_frame, Equalization);
+[Tx, a, b, nbPackets] = ofdm_mod_stereo(qamStream, N, Lcp, CHANNELS, Lt, Ld, train_frame, Equalization);
 
 % Transmit data sequence.
 if channel == "simulation"
@@ -78,7 +79,9 @@ end
 
 %% Post transmission processing
 % OFDM demodulation.
-[rx_qam, CHANNELS] = ofdm_demod_stereo(OFDM_seq, N, Lcp, trainblock, Lt, Ld, M, nbPackets, Equalization, mu, alpha);
+mu = 0.5; % NLMS stepsize
+alpha = 1; % NLMS regularization
+[rx_qam, CHANNELS] = ofdm_demod_stereo(aligned_Rx, N, Lcp, train_frame, Lt, Ld, M, nbPackets, Equalization, mu, alpha);
 CHANNEL_combo = CHANNELS(:,1); % Extract first estimated channel
 
 % QAM demodulation.

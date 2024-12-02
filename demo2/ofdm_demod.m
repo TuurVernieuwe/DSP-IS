@@ -191,8 +191,10 @@ else % nargin = 10
             index = index + 1;
         end
     end
-    
     W = 1./conj(CHANNEL);
+    QAM_matrix(:,1) = conj(W).*QAM_matrix(:,1);
+    
+    % DD equalization
     Ld = size(QAM_matrix, 2);
     for i = 1:Ld-1 % Columns
         % NMLS filter implementation.
@@ -213,7 +215,7 @@ else % nargin = 10
             end
         end
         % Apply equalisation with the updated values
-        QAM_matrix(:, i) = conj(W).*QAM_matrix(:,i);
+        QAM_matrix(:,i+1) = conj(W).*QAM_matrix(:,i+1);
     end
     CHANNELS = 1./conj(W);
 

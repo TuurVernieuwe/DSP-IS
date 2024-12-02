@@ -72,38 +72,37 @@ elseif Equalization == "packet"
         trainpacket = QAM_matrix(:, 1:Lt);
         QAM_matrix = QAM_matrix(:, Lt+1:end);
         
-        % Estimate channel frequency response
+        % Estimate channel frequency responses
         % Make initial channel estimation based on training frames
         CHANNEL = zeros(N/2-1, 1);
         for j=1:N/2-1
             CHANNEL(j) = (trainblock(j)*ones(length(trainpacket(j,:).'), 1)) \ trainpacket(j,:).';
         end
+        W = 1./conj(CHANNEL);
+        QAM_matrix(:,1) = conj(W).*QAM_matrix(:,1);
         
+        % DD equalization
         Ld = size(QAM_matrix, 2);
-        W = zeros(N/2-1, Ld);
-        W(:, 1) = (1 + 0.1)./conj(CHANNEL); 
-        for i = 1:Ld-1 % Columns
+        for j = 1:Ld-1 % Columns
             % NMLS filter implementation.
             % Initialise filters, reconstructed transmitted signal and error
             rec_Xk = zeros(N/2-1,1); 
             Ek = zeros(N/2-1,1);
             for n = 1:N/2-1 % Rows
-                if ON_OFF_mask(n)
-                    % Apply filter.
-                    estXk = W(n, i)' * QAM_matrix(n, i+1);
-                    % Reconstruct transmitted signal.
-                    rec_bits = qam_demod(estXk, M, log2(M));
-                    rec_Xk(n) = qam_mod(rec_bits, M);
-                    % Calculate error signal.
-                    Ek(n) = rec_Xk(n) - estXk;
-                    % Update filter.
-                    W(n, i+1) = W(n,i) + mu/(alpha + QAM_matrix(n,i+1)'.*QAM_matrix(n,i+1)) .* QAM_matrix(n,i+1) .* conj(Ek(n));
-                end
+                % Apply filter.
+                estXk = W(n)' * QAM_matrix(n, j+1);
+                % Reconstruct transmitted signal.
+                rec_bits = qam_demod(estXk, M, log2(M));
+                rec_Xk(n) = qam_mod(rec_bits, M);
+                % Calculate error signal.
+                Ek(n) = rec_Xk(n) - estXk;
+                % Update filter.
+                W(n) = W(n) + mu/(alpha + QAM_matrix(n,j+1)'.*QAM_matrix(n,j+1)) .* QAM_matrix(n,j+1) .* conj(Ek(n));
             end
             % Apply equalisation with the updated values
-            QAM_matrix(:, i) = conj(W(:,i)).*QAM_matrix(:,i);
+            QAM_matrix(:,j+1) = conj(W).*QAM_matrix(:,j+1);
         end
-        CHANNELS = 1./conj(W);
+        CHANNELS(:,1) = 1./conj(W);
         
         % Supply streamLength number of symbols (you can ignore this until exercise 4.2)
         QAM_seq = reshape(QAM_matrix, [], 1);

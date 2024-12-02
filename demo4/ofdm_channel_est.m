@@ -2,7 +2,7 @@ function [ CHANNELS ] = ofdm_channel_est( OFDM_seq, N, Lcp, trainblock, Lt )
 % Stereo OFDM channel estimation
 % 
 % INPUT:
-% QAM_seq       T1X1        Sequence containing QAM symbols
+% OFDM_seq      T1X1        Sequence containing OFDM symbols
 % N             1X1         Total number of symbols in a single OFDM frame.
 % Lcp           1X1         Cyclic prefix length [samples]
 % trainblock    T2X1        Training block of T2 QAM symbols
@@ -33,6 +33,6 @@ for n = 1:N/2-1
 end
 
 % Concatenate CHANNELS1 and CHANNELS2
-CHANNELS = [CHANNELS1; CHANNELS2];
+CHANNELS = [CHANNELS1, CHANNELS2];
 end
 
