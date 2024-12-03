@@ -129,7 +129,7 @@ elseif (nargin == 9)
     CHANNELS = zeros(N/2-1, nbPackets);
     for i = 1:nbPackets
         % Reshape the received OFDM sequence (serial to parallel conversion)
-        OFDM_matrix = reshape(OFDM_seq((i-1)*(Lt+Ld)*(N+Lcp)+1:i*(Lt+Ld)*(N+Lcp)), N+Lcp, []);
+        OFDM_matrix = reshape(OFDM_seq(1+(i-1)*(Lt+Ld)*(N+Lcp):i*(Lt+Ld)*(N+Lcp)), N+Lcp, []);
         
         % Remove the cyclic prefix (you can ignore this until exercise 3.2.4)
         OFDM_matrix = OFDM_matrix(Lcp+1:end, :);

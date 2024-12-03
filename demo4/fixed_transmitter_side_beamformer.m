@@ -15,7 +15,8 @@ b = conj(H2)./denom;
 
 % Plot
 figure;
-plot([abs(H1), abs(H2), abs(denom)])
+plot([pow2db(abs(H1).^2), pow2db(abs(H2).^2), pow2db(abs(denom).^2)])
+axis tight
 xlabel('k')
 ylabel('Transfer function H(k)')
 legend('H^1', 'H^2', 'H^{1+2}')

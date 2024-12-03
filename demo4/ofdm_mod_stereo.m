@@ -72,7 +72,8 @@ elseif Equalization == "packet"
         QAM_matrix_raw = [QAM_matrix_raw, zeros(size(QAM_matrix_raw, 1), fOFDM_pad)];
     end
     nbPackets = size(QAM_matrix_raw, 2)/Ld;
-
+    len = (N+Lcp)*(Lt+Ld); % Number of elements in one packet
+    OFDM_seq = zeros(len*nbPackets, 2);
     for i = 1:2
         % Apply factors
         if i == 1
@@ -99,10 +100,8 @@ elseif Equalization == "packet"
         trainpacket = repmat(OFDM_frame_trainblock, Lt, 1);
         
          % Construct serialized packets
-        len = size(OFDM_frame, 1)*(Lt+Ld); % Number of elements in one packet
-        OFDM_seq = zeros(len*nbPackets, 2);
         for j = 1:nbPackets
-            OFDM_seq(1+len*(j-1):len*j, i) = [trainpacket; reshape(OFDM_frame(:, 1+Ld*(i-1):Ld*i), [], 1)];
+            OFDM_seq(1+len*(j-1):len*j, i) = [trainpacket; reshape(OFDM_frame(:, 1+Ld*(j-1):Ld*j), [], 1)];
         end
     end
 end

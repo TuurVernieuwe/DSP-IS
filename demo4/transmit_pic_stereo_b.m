@@ -5,10 +5,10 @@ clear; close all; clc;
 %% Parameters.
 N = 1024; % Total number of symbols in a single OFDM frame, i.e., the DFT size
 Lcp = 300; % Cyclic prefix length [samples].
-M = 16; % QAM constellation size.
-SNR = 20; % SNR of transmission [dB].
-Lt = 5; % Number of training frames.
-Ld = 5; % Number of data frames.
+M = 8; % QAM constellation size.
+SNR = 15; % SNR of transmission [dB].
+Lt = 10; % Number of training frames.
+Ld = 10; % Number of data frames.
 fs = 16000; % Sampling frequency [Hz].
 channel = "simulation"; % simulation or acoustic
 Equalization = "packet"; % Equalization mode (see ofdm_demod_stereo.m)
@@ -24,7 +24,7 @@ train_frame = qam_mod(train_bits, M);
 ofdm_train_seq = ofdm_mod(repmat(train_frame, Lt, 1), N, Lcp, ones(N/2-1,1));
 
 % Construct training sequence for transmitter side channel estimation.
-ofdm_train_seq_stereo = [ofdm_train_seq, ofdm_train_seq];
+ofdm_train_seq_stereo = [ofdm_train_seq, zeros(length(ofdm_train_seq), 1); zeros(length(ofdm_train_seq), 1), ofdm_train_seq];
 
 %% Transmit OFDM sequence.
 if channel == "simulation"
@@ -32,7 +32,7 @@ if channel == "simulation"
     Rx = simulate_channel_stereo(simin, Nswitch,'channel_stereo_session7.mat',smoothing_factor);
     Rx = awgn(Rx,SNR,'measured');
     aligned_Rx = alignIO(Rx, fs);
-    aligned_Rx = aligned_Rx(1:2*length(ofdm_train_seq));
+    aligned_Rx = aligned_Rx(1:length(ofdm_train_seq_stereo));
 elseif channel == "acoustic"
     [simin, nbsecs, fs] = initparams_stereo(ofdm_train_seq_stereo, fs);
     sim('recplay_stereo');
@@ -54,7 +54,9 @@ ylabel('Magnitude [arb.]')
 title('Impulse response.');
 legend('left','right');
 subplot(2,1,2);
-plot(abs(CHANNELS));
+plot(pow2db(abs(CHANNELS).^2));
+xlim([1 N/2-1])
+ylim([-60 10])
 title('Frequency response.');
 xlabel('Samples')
 ylabel('Magnitude [dB]')   
@@ -92,6 +94,6 @@ figure;
 imageRx = bitstreamtoimage(rx_bits, imageSize, bitsPerPixel);
 % Plot images
 subplot(1,2,1); colormap(colorMap); image(imageData); axis image; title('Original image'); drawnow;
-subplot(1,2,2); colormap(colorMap); image(imageRx); axis image; title(['Received image']); drawnow;
+subplot(1,2,2); colormap(colorMap); image(imageRx); axis image; title('Received image'); drawnow;
 % Calculate BER
 BER = ber(bitStream, rx_bits)

@@ -9,9 +9,9 @@ function [ out_aligned ] = alignIO( out, fs )
 % out_aligned   T2X1    Aligned output of T2 samples.
 
 %% Define syncronization pulse
-t = 0:1/fs:1;
 f_sync = 5000;
-sync_pulse = sin(2*pi*t*f_sync)';
+t = 0:1/fs:1;
+sync_pulse = sin(2*pi*f_sync*t)';
 
 %% Align I/O
 safety_margin = 50; % Safety margin [samples]

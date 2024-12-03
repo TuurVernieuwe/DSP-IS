@@ -15,9 +15,8 @@ alpha = 1; % NLMS regularization
 SNR = 20; % SNR of transmission 
 
 %% Generate two random impulse responses, and calculate frequency response.
-load('channel_session7.mat')
-h1 = h(1:Lh); h2 = h(1:Lh) + randi([-1 1], Lh, 1); % Impulse responses
-H = [fft(h1, N) fft(h2, N)];
+load('channel_stereo_session7.mat') % Impulse responses
+H = [fft(h1(1:min(length(h1),Lh)), N) fft(h2(1:min(length(h1),Lh)), N)];
 H = H(1:N/2-1,:); % N/2-1X2 matrix containing frequency transform of h1 and h2
 
 %% Construct QAM symbol stream.
