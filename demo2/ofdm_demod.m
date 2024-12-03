@@ -196,6 +196,8 @@ else % nargin = 10
     
     % DD equalization
     Ld = size(QAM_matrix, 2);
+    CHANNELS = zeros(N/2-1, Ld);
+    CHANNELS(:,1) = 1./conj(W);
     for i = 1:Ld-1 % Columns
         % NMLS filter implementation.
         % Initialise filters, reconstructed transmitted signal and error
@@ -213,11 +215,11 @@ else % nargin = 10
                 % Update filter.
                 W(n) = W(n) + mu/(alpha + QAM_matrix(n,i+1)'.*QAM_matrix(n,i+1)) .* QAM_matrix(n,i+1) .* conj(Ek(n));
             end
+            CHANNELS(:, n+1) = 1./conj(W);
         end
         % Apply equalisation with the updated values
         QAM_matrix(:,i+1) = conj(W).*QAM_matrix(:,i+1);
     end
-    CHANNELS = 1./conj(W);
 
     % Apply on-off mask (you can ignore this until exercise 4.3)
     QAM_matrix = QAM_matrix(logical(ON_OFF_mask),:);

@@ -11,13 +11,13 @@ while 1
         est_h = ifft([0; CHANNEL; 0; flip(conj(CHANNEL))]);
         plot(real(est_h()));
         xlim([0 200])
-        ylim([-1 1]); % plot the channel impulse response
+        ylim([-2 2]); % plot the channel impulse response
         title('Channel in time domain')
         
         subplot(2,2,3);
         T0 = fs/N;
         plot(T0:T0:T0*(N/2-1), pow2db(abs(CHANNEL).^2).'); % plot the channel frequency response
-        ylim([-10 20])
+        ylim([10 40])
         xlabel('Frequency [Hz]')
         ylabel('dB')
         title('Channel in frequency domain (no DC)')
